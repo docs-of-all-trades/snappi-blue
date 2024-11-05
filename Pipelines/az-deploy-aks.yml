@@ -1,0 +1,102 @@
+variables:
+  - group: "Credentials"
+  - name: POOL_NAME
+    value: $[coalesce(variables['PoolName'], 'Linux agent pool')]
+  - name: location
+    value: "germanywestcentral"
+  - name: locationShort
+    value: "gwc"
+  - name: customDomain
+    value: "docs"
+  - name: envType
+    ${{if eq(parameters.Environment, 'SNAPPI_DEV')}}:
+      value: "Dev"
+    ${{if eq(parameters.Environment, 'SNAPPI_UAT')}}:
+      value: "Uat"
+    ${{if eq(parameters.Environment, 'SNAPPI_PROD')}}:
+      value: "Prod"
+  - name: env
+    value: ${{ lower(variables.envType) }}
+  - name: dnsZone
+    ${{if eq(parameters.Environment, 'SNAPPI_DEV')}}:
+      value: "snappibank.dev"
+    ${{if eq(parameters.Environment, 'SNAPPI_UAT')}}:
+      value: "snappibank.com.gr"
+    ${{if eq(parameters.Environment, 'SNAPPI_PROD')}}:
+      value: "snappibank.com"
+  - name: "branch"
+    ${{if eq(parameters.Environment, 'SNAPPI_DEV')}}:
+      value: "main"
+    ${{if eq(parameters.Environment, 'SNAPPI_UAT')}}:
+      value: "UAT"
+    ${{if eq(parameters.Environment, 'SNAPPI_PROD')}}:
+      value: "PROD"
+  - name: certSP
+    ${{if eq(parameters.Environment, 'SNAPPI_PROD')}}:
+      value: "SNAPPI_CERT_PROD"
+    ${{else}}:
+      value: "SNAPPI_CERT"
+  - name: afdKvName
+    ${{if eq(parameters.Environment, 'SNAPPI_PROD')}}:
+      value: "kv-afd-prod-${{ variables.locationShort }}-001"
+    ${{if eq(parameters.Environment, 'SNAPPI_UAT')}}:
+      value: "kv-afd-${{ variables.locationShort }}-001"
+
+parameters:
+  - name: Environment
+    displayName: "Environment"
+    type: string
+    default: "SNAPPI_DEV"
+    values:
+      - "SNAPPI_DEV"
+      - "SNAPPI_UAT"
+      - "SNAPPI_PROD"
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: Natech.Templates/Natech.Templates.DevOps
+      ref: "main"
+    - repository: argo
+      type: git
+      name: Natech.IaC/Snappi.ArgoCD
+      ref: $(branch)  
+
+pool:
+  name: $(POOL_NAME)
+
+trigger:
+  branches:
+    include:
+      - main
+
+stages:
+
+  - template: stages/bash-create-cert-from-script.yml@templates
+    parameters:
+      ServiceConnection: ${{ variables.certSP }}
+      KeyVaultName: ${{ variables.afdKvName }}
+      CN: "${{ variables.customDomain }}.${{ variables.dnsZone }}"
+      Condition: ${{ in(parameters.Environment, 'SNAPPI_UAT', 'SNAPPI_PROD') }}
+
+  - template: stages/docker-push.yml@templates
+    parameters:
+      ServiceConnection: "${{ parameters.Environment }}_DOCKER_GWC"
+      ProjectDirectory: "snappi-docs"
+      DockerfilePath: "snappi-docs/Dockerfile.${{ variables.env }}"
+      BuildContext: "snappi-docs"
+      Repository: "snappi.docs"
+
+  - template: stages/update-argo-repo.yml@templates
+    parameters:
+      ValuesFileDirectory: "apps/dev-portal/docs.apis.values.yaml"
+      BranchName: $(branch)
+  
+  - template: stages/aks-expose-front-door.yml@templates
+    parameters:
+      FilePath: "./Natech.Templates.DevOps/IaC/Azure/AksFrontDoor/main.bicep"
+      ServiceConnection: "${{parameters.Environment}}"
+      AppName: "docs"
+      customDomain: "${{ variables.customDomain }}"
+      dnsZone: "${{ variables.dnsZone }}"

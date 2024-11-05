@@ -1,0 +1,196 @@
+import { useState } from "react"
+import cn from "classnames"
+import { getColorClassName } from '@/lib/utils.js'
+export const ChevronRight = ({ className }) => <svg className={className} viewBox="0 0 20 20" fill="currentColor">
+  <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+</svg>
+
+export const HTTPResponseCodes = {
+  100: "Continue",
+  101: "Switching Protocols",
+  102: "Processing (WebDAV)",
+  103: "Early Hints",
+  200: "OK",
+  201: "Created",
+  202: "Accepted",
+  203: "Non-Authoritative Information",
+  204: "No Content",
+  205: "Reset Content",
+  206: "Partial Content",
+  207: "Multi-Status (WebDAV)",
+  208: "Already Reported (WebDAV)",
+  226: "IM Used (HTTP Delta encoding)",
+  300: "Multiple Choices",
+  301: "Moved Permanently",
+  302: "Found",
+  303: "See Other",
+  304: "Not Modified",
+  305: "Use Proxy Deprecated",
+  306: "unused",
+  307: "Temporary Redirect",
+  308: "Permanent Redirect",
+  400: "Bad Request",
+  401: "Unauthorized",
+  402: "Payment Required Experimental",
+  403: "Forbidden",
+  404: "Not Found",
+  405: "Method Not Allowed",
+  406: "Not Acceptable",
+  407: "Proxy Authentication Required",
+  408: "Request Timeout",
+  409: "Conflict",
+  410: "Gone",
+  411: "Length Required",
+  412: "Precondition Failed",
+  413: "Payload Too Large",
+  414: "URI Too Long",
+  415: "Unsupported Media Type",
+  416: "Range Not Satisfiable",
+  417: "Expectation Failed",
+  418: "I'm a teapot",
+  421: "Misdirected Request",
+  422: "Unprocessable Entity (WebDAV)",
+  423: "Locked (WebDAV)",
+  424: "Failed Dependency (WebDAV)",
+  425: "Too Early Experimental",
+  426: "Upgrade Required",
+  428: "Precondition Required",
+  429: "Too Many Requests",
+  431: "Request Header Fields Too Large",
+  451: "Unavailable For Legal Reasons",
+  500: "Internal Server Error",
+  501: "Not Implemented",
+  502: "Bad Gateway",
+  503: "Service Unavailable",
+  504: "Gateway Timeout",
+  505: "HTTP Version Not Supported",
+  506: "Variant Also Negotiates",
+  507: "Insufficient Storage (WebDAV)",
+  508: "Loop Detected (WebDAV)",
+  510: "Not Extended",
+  511: "Network Authentication Require:",
+};
+
+export const getResponseColorClassName = (code) => {
+  if (code < 300) {
+    return "bg-green-500"
+  } else if (code < 400) {
+    return "bg-orange-500"
+  } else {
+    return "bg-rose-500"
+  }
+}
+
+export const ResponseTag = ({ code }) => {
+  return <div className="not-prose flex flex-row gap-2 items-center">
+      <div className={`${getResponseColorClassName(code)} rounded-full w-2 h-2`}/>
+      <p className="font-medium">{code}: {HTTPResponseCodes[code]}</p>
+    </div>
+}
+
+export const Badge = ({ method }) => {
+  return <span className={`${getColorClassName(method)} font-medium rounded-full px-2 py-1 text-xs w-min select-none`}>{ method }</span>
+}
+
+export const ParamsTable = ({ params }) => {
+  return <table className="w-full text-sm table-auto prose border-collapse min-w-full m-0">
+      { params.map(p => {
+        return <tr className="border-b border-neutral-100">
+            <td className="w-48 py-2 font-mono">
+              {p.name}{p.required && <span className="text-rose-500 text-xs ml-0.5 transform -translate-y-1 inline-block select-none">*</span>}
+            </td>
+            <td className="w-48 py-2">
+              {p.type}
+            </td>
+            <td className="py-2">
+              {p.description}
+            </td>
+          </tr>
+      })}
+    </table>
+}
+
+export const RevealButton = ({ open, className, onClick }) => {
+  return <div onClick={onClick} className={`${className} p-1 rounded-md hover:bg-neutral-100 transition cursor-pointer`}><ChevronRight className={cn(
+      "w-6 h-6 text-neutral-600 transform transition", {
+        "rotate-0": !open,
+        "rotate-90": open,
+      }
+    )} /></div>
+}
+
+export const HTTPAPIDoc = ({ method, baseUrl, path, description, parameters, responses }) => {
+  const [isOpen, setOpen] = useState(false)
+  const queryParams = parameters?.filter(p => p.in === "query")
+  const pathParams = parameters?.filter(p => p.in === "path")
+  const formDataParams = parameters?.filter(p => p.in === "formData")
+  const bodyParams = parameters?.filter(p => p.in === "body")
+
+return <div className="pl-12 pr-6 pt-4 pb-4 rounded-md border border-neutral-200 flex flex-col gap-2 overflow-hidden">
+
+<div className="not-prose relative m-0 flex flex-row items-center gap-4">
+  <RevealButton
+    className="absolute left-[-38px]"
+    open={isOpen}
+    onClick={() => setOpen((o) => !o)}
+  />
+  <Badge method={method} />
+  <p className="text-sm">
+    <span className="text-neutral-400">{baseUrl || ''}</span>
+    <span className="font-medium text-neutral-900">{path || ''}</span>
+  </p>
+</div>
+<p className="m-0 mt-2 p-0">{description}</p>
+{isOpen && (
+  <>
+    {parameters?.length > 0 && (
+      <div>
+        <p className="mt-4 font-semibold">Parameters</p>
+        {queryParams?.length > 0 && (
+          <>
+            <p className="mt-10 text-sm font-semibold">Query</p>
+            <ParamsTable params={queryParams} />
+          </>
+        )}
+        {pathParams?.length > 0 && (
+          <>
+            <p className="mt-10 text-sm font-semibold">Path</p>
+            <ParamsTable params={pathParams} />
+          </>
+        )}
+        {bodyParams?.length > 0 && (
+          <>
+            <p className="mt-10 text-sm font-semibold">Body</p>
+            <ParamsTable params={bodyParams} />
+          </>
+        )}
+        {formDataParams?.length > 0 && (
+          <>
+            <p className="mt-10 text-sm font-semibold">Form data</p>
+            <ParamsTable params={formDataParams} />
+          </>
+        )}
+      </div>
+    )}
+    {Object.keys(responses)?.length > 0 && (
+      <>
+        <p className="m-0 mt-4 p-0 font-semibold">Responses</p>
+        <table className="prose m-0 w-full min-w-full table-auto border-collapse text-sm">
+          {Object.keys(responses).map((code) => {
+            return (
+              <tr className="border-b border-neutral-100">
+                <td className="w-48 py-2">
+                  <ResponseTag code={code} />
+                </td>
+                <td className="py-2">{responses[code]?.description}</td>
+              </tr>
+            )
+          })}
+        </table>
+      </>
+    )}
+  </>
+)}
+
+  </div>
+}

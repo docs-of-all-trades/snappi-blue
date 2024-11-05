@@ -1,0 +1,132 @@
+import { Steps, Step, StepImage } from '../components/Step'
+import Image from 'next/image'
+
+
+export const description =
+  'Start integrating your systems and test your transactions through the Snappi developers portal.'
+
+# Create applications
+
+The Snappi developers portal allows you to integrate your platform with snappi and enable e-commerce and payment functionality. {{ className: 'lead' }}
+
+Creating applications is the first step for you to set up this integration. 
+
+
+Let's walk you through the steps of creating an application:
+
+<Steps>
+  <Step number={1} title="Log into your developers portal account">
+    Log in with your username and password.
+    <div className="mt-4">
+      <Image 
+        src="/landing-page.webp" 
+        alt="Developers portal" 
+        width={800} 
+        height={600} 
+        sizes="(max-width: 800px) 100vw, 800px"
+      />
+    </div>
+  </Step>
+
+  <Step number={2} title="Click Create App">
+    Click the **Create App** button. Launch the application creation process.
+  </Step>
+
+  <Step number={3} title="Select Application Type">
+    Choose the type of application you wish to create. 
+    <div className="mt-4">
+      <Image 
+        src="/select-app-type-crop.webp" 
+        alt="Developers portal" 
+        width={600} 
+        height={400} 
+        sizes="(max-width: 600px) 100vw, 400px"
+      />
+    </div>    
+    
+    
+    Available options:
+
+    - <strong>Merchant App</strong>: for standard merchant applications.
+    - <strong>Merchant App - Sandbox</strong>: a sandbox version, used for testing without impacting live systems.
+    - <strong>PSD2 App</strong>: for applications compliant with the Payment Services Directive 2 (PSD2), which is necessary for secure online payments and open banking.
+
+
+  </Step>
+
+  <Step number={4} title="Edit your application's data settings">
+
+    Fill in the required fields for the application you are creating.
+
+    <strong>Merchant App / Merchant App - Sandbox</strong>:
+
+    <div className="mt-4">
+      <Image 
+        src="/merchant-app-data-settings-crop.webp" 
+        alt="Developers portal" 
+        width={400} 
+        height={200} 
+        sizes="(max-width: 400px) 100vw, 200px"
+      />
+    </div>
+
+      - `Application name`: the name of the application being created.
+        <Important>
+        Enter a unique name for your application in the provided field. This is how your application appears in the portal and also on reports.
+        </Important>
+      - `Application description`: a brief description of the application’s purpose or functionality.
+      - `Success Callback URL`: the URL used to notify your application when a transaction is successfully completed. The <strong>{`{orderIdentifier}`}</strong> placeholder can be replaced dynamically with the actual order identifier to track specific transactions.
+      - `Fail Callback URL`: the URL used to notify your application when a transaction fails. The <strong>{`{orderIdentifier}`}</strong> placeholder allows tracking of failed transactions by order.
+      - `Success Redirect URL`: after a successful transaction, you will be redirected to this URL. It often leads to a confirmation or thank-you page on your website.
+      - `Fail Redirect URL`: this URL redirects you after a transaction failure, typically taking you to an error page or providing further instructions on how to proceed.
+
+    <strong>PSD2 App</strong>:
+
+    <div className="mt-4">
+      <Image 
+        src="/psd2-app-data-settings-crop.webp" 
+        alt="Developers portal" 
+        width={500} 
+        height={300} 
+        sizes="(max-width: 500px) 100vw, 300px"
+      />
+    </div>    
+
+      - `Application name`: the name assigned to the PSD2 application.
+      - `Application description`: a brief description outlining the application’s features or use case.
+      - `Certificate`: upload an eIDAS (Electronic Identification, Authentication and Trust Services) certificate, which is crucial for ensuring secure communications and compliance with digital identity regulations.
+      - `Redirect URI`: specify the URI (Uniform Resource Identifier) where the application will redirect users after certain actions, such as consents or payments.
+
+      * <strong>Account information</strong>: enable access to account information services, allowing the application to retrieve account details.
+
+      * <strong>Payment initiation</strong>: enable payment initiation services, allowing the application to initiate payments.
+
+      * <strong>Funds confirmation</strong>: enable funds confirmation services, allowing the application to confirm the availability of funds.
+
+
+
+  </Step>
+
+  <Step number={5} title="Generate your application">
+    Once you have provided all the required fields, click the <strong>Create App</strong> button to finalize the application setup.
+  </Step>
+
+  <Step number={6} title="Verify the newly created app">
+    Finalize your new application you have just created in the dashboard.
+{/*     <div className="mt-4">
+      <Image 
+        src="/view-app-dashboard.png" 
+        alt="Developers portal" 
+        width={800} 
+        height={600} 
+        sizes="(max-width: 800px) 100vw, 800px"
+      />
+    </div> */}
+  </Step>
+
+  <Step number={7} title="Cancel if necessary">
+    If you decide not to proceed, click <strong>Cancel</strong> and discard any provided data. Abort the process and return to the previous screen or main dashboard.
+  </Step>
+
+</Steps>
+

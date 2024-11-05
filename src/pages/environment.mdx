@@ -1,0 +1,98 @@
+
+import { EnvironmentSpecificContent } from '../components/EnvironmentSpecificContent'
+
+
+
+export const description =
+  'This section ensures that you can easily find the correct base URL and understand how to dynamically switch between environments.'
+
+# API environment
+
+Before you start making API calls, it is important to understand the Snappi landscape. {{ className: 'lead' }}
+
+
+<strong>Base API Endpoint</strong>: The base API endpoint varies depending on the environment. Use the appropriate endpoint for successful API calls. 
+   
+
+
+<EnvironmentSpecificContent environment="UAT">
+
+<strong>UAT environment</strong>: This is the User Acceptance Testing environment, primarily used for testing new features before pushing them to production.
+
+
+   ```bash {{ title: 'Pay Later (UAT)' }}
+   merchantbnplapi.snappibank.com.gr
+   ```
+
+   ```bash {{ title: 'PSD2 (UAT)' }}
+   psd2api.snappibank.com.gr
+   ```
+
+
+<strong>Sandbox environment</strong>: A safe testing space for experimenting with API integrations without affecting live data.
+
+   ```bash {{ title: 'Pay Later (Sandbox)' }}
+   bnpl-sandbox.snappibank.com.gr/
+   ```
+
+   ```bash {{ title: 'PSD2 (Sandbox)' }}
+   psd2api.sandbox.snappibank.com.gr
+   ```
+
+For example, if you are working in the <strong>UAT</strong> environment and want to interact with the <strong>PSD2</strong> service, your <strong>Base URL</strong> would be:
+
+```bash {{ title: 'UAT' }}
+https://psd2api.snappibank.com.gr/
+```
+</EnvironmentSpecificContent> 
+
+<EnvironmentSpecificContent environment="PROD"> 
+
+<strong>Sandbox environment</strong>: A safe testing space for experimenting with API integrations without affecting live data.
+
+
+   ```bash {{ title: 'PSD2 (Sandbox)' }}
+   psd2api.sandbox.snappibank.com.gr
+   ```
+
+<Note> 
+For the <strong>Production</strong> environment, only the <strong>Sandbox</strong> is currently available.
+</Note>
+
+
+<strong>Production environment</strong>: The live environment for real data interactions.
+
+   ```bash {{ title: 'Pay Later (Production)' }}
+   merchantbnplapi.snappibank.com
+   ```
+
+   ```bash {{ title: 'PSD2 (Production)' }}
+   psd2api.snappibank.com
+   ```
+
+   For example, if you are working in the <strong>Production</strong> environment and want to interact with the <strong>PSD2</strong> service, your <strong>Base URL</strong> would be:
+
+```bash {{ title: 'Production' }}
+https://psd2api.snappibank.com/
+```
+</EnvironmentSpecificContent>      
+
+
+
+{/*
+<EnvironmentSpecificContent environment="PROD"> 
+For example, if you are working in the <strong>PROD</strong> environment and want to interact with the <strong>PSD2</strong> service, your <strong>Base URL</strong> would be:
+
+
+```bash {{ title: 'PRODUCTION' }}
+https://psd2api.snappibank.com/v1/
+```
+</EnvironmentSpecificContent> 
+*/}
+{/*
+<Note>
+By structuring your API calls this way, you can easily switch between environments.
+</Note>
+*/}
+
+

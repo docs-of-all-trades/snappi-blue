@@ -1,0 +1,64 @@
+
+
+export const description =
+  'snappi offers fine-tuned JavaScript, Ruby, PHP, Python, and Go libraries to make your life easier and give you the best experience when consuming the API.'
+
+export const sections = [{ notitle: 'Calls', id: 'official-libraries' }]
+
+# PSD2
+
+PSD2 is the second Payment Services Directive, designed by the countries of the European Union (Directive (EU) 2015/2366 of the European Parliament and of the Council of 25 November 2015 on payment services in the internal market). {{ className: 'lead' }}
+
+{/*The PSD2 Directive was implemented into Belgian law by the Act of 11 March 2018. */}
+
+<>
+  <p><img src="/PSD2_isolated.png" alt="snappi" title="title" width="400" height="400" position="centre" /></p>
+</>
+
+## What PSD2 does?
+
+- Increases the security of payments in electronic banking by
+- Introducing two-step verification through at least two elements from the following categories:
+  - knowledge; information only known to you, e.g. password, PIN.
+  - ownership; something that only you have access to, e.g., telephone, token, payment card, or your own features, e.g., biometric data.
+- Introduction of payment services as part of open banking.
+
+<Note>
+PSD2 is for banks, not for merchants. This means that to comply with the law in their home country, issuing banks must refuse non-compliant transactions. To avoid the risk of issuing banks refusing your transactions, you as a merchant need to ensure that your transactions comply with PSD2 SCA regulations.
+</Note>
+
+## What do you gain?
+
+Thanks to PSD2, you get:
+
+- access to all payment accounts (kept in various banks) in one place.
+- immediate verification of the current financial situation.
+- secure transaction confirmation.
+- automated processes, e.g., credit verification process.
+- access to open banking and consent management for external service providers.
+
+## PSD2 API
+
+The PSD2 API is a standardized set of application programming interfaces that enables secure and regulated access to payment services and customers' banking information. It is part of the European Union's PSD2 regulation, which aims to enhance competition, innovation, and security in the financial industry.
+
+<Note>
+  It is a REST API that allows 3rd-party providers to access payment accounts created with snappi.
+</Note>
+
+
+
+## Accounts
+
+The Account Information Service provides account information services as an online service to provide consolidated information on one or more payment accounts held by a payment service user with one or more payment service provider(s).
+
+## Payments
+
+The Payments Initiation Services Provider provides an online service to initiate a payment order at the request of the payment service user with respect to a payment account held at another payment service provider.
+
+## Funds
+
+The service of confirmation of funds at the payer’s payment account in an amount sufficient to effect
+the payment transaction within the Compliance Scope consists in sending a request by the TPP acting
+as a PIISP to the ASPSP for a confirmation whether or not the PSU’s payment account has funds in the
+amount as determined in the request on the basis of consent granted earlier by the PSU. In response,
+the ASPSP sends a message in the form of ‘YES’ or ‘NO’.

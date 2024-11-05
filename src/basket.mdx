@@ -1,0 +1,896 @@
+import { DocumentMagnifyingGlassIcon } from "@heroicons/react/24/outline"
+import { Collapse } from "../components/Collapse"
+//import { userAgent } from "next/server"
+
+
+
+export const description =
+  'On this page, we’ll dive into the basket component of the snappi Pay Later API.'
+
+# Basket
+
+{/*
+<>
+  <p>
+    <img src="/snappi_pay_later.png" alt="Alt text" title="title" />
+  </p>
+</>
+*/}
+
+Manage your shopping carts! Retrieve information about items in your shopping cart before checkout. {{ className: 'lead' }}
+
+<Note>
+Access details such as product names, quantities and prices to streamline the payment process and enhance the overall shopping experience.
+</Note>
+
+
+
+{/* You can access all the relevant details needed for further processing, such as calculating the total price or displaying the items in a user-friendly format. This information can be used to generate an invoice, process payments or perform any other necessary operations related to the basket.
+
+<Note>
+The Basket supports both authenticated and unauthenticated requests. If the user is not authenticated, the response will include only basic information about the basket. On the other hand, if the user is authenticated, the response will include more detailed information such as the user's personal details, shipping address and any applied discounts or promotional codes.
+</Note> */}
+---
+
+{/* ## Manage basket options {{ tag: 'OPTIONS', label: '/basket' }}
+
+<Row>
+  <Col>
+
+    Manage options related to a basket. A basket represents a collection of items that a user can add to their cart for purchase. You can retrieve, update and delete options associated with a specific basket.
+
+    ### Parameters
+
+    <Properties>
+      <Property name="api-version" type="string">
+        The requested API version.
+
+        Default value: `v1`.
+      </Property>
+    </Properties>
+
+  </Col>
+
+  <Col sticky>
+    <CodeGroup title="Request" tag="OPTIONS" label="/basket">
+      ```bash {{ title: 'cURL' }}
+      curl -X OPTIONS /basket \
+        -H 'Accept: application/json'
+      ```
+
+      ```js
+      const headers = {
+        Accept: "application/json",
+      };
+
+      fetch("/basket", {
+        method: "OPTIONS",
+
+        headers: headers,
+      })
+        .then(function (res) {
+          return res.json();
+        })
+        .then(function (body) {
+          console.log(body);
+        });
+      ```
+
+      ```python
+      import requests
+      headers = {
+        'Accept': 'application/json'
+      }
+
+      r = requests.options('/basket', headers = headers)
+
+      print(r.json())
+      ```
+
+      ```php
+      <?php
+
+      require 'vendor/autoload.php';
+
+      $headers = array(
+          'Accept' => 'application/json',
+      );
+
+      client = new \GuzzleHttp\Client();
+
+      $request_body = array();
+
+      try {
+          $response = $client->request('OPTIONS','/basket', array(
+              'headers' => $headers,
+              'json' => $request_body,
+              )
+          );
+          print_r($response->getBody()->getContents());
+      }
+      catch (\GuzzleHttp\Exception\BadResponseException $e) {
+        print_r($e->getMessage());
+      }
+      ```     
+    </CodeGroup>
+
+  <Col sticky>
+    <CodeGroup title="Response">
+
+    ```json {{ title: '200' }}
+    {
+      "type": "string",
+      "title": "string",
+      "status": 0,
+      "detail": "string",
+      "instance": "string",
+      "property1": null,
+        "property2": null
+
+    }
+    ```
+
+    ```json {{ title: '500' }}
+    {
+      "type": "string",
+      "title": "string",
+      "status": 0,
+      "detail": "string",
+      "instance": "string",
+      "property1": null,
+        "property2": null
+    }
+    ``` 
+    </CodeGroup> 
+  </Col>   
+
+  </Col>
+</Row>
+
+### Responses
+
+| Status | Meaning                                                                    | Description                                                | Schema                                  |
+| ------ | -------------------------------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------- |
+| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)                    | The allowed HTTP methods.                                  | None                                    |
+| 500    | [Internal Server Error](https://tools.ietf.org/html/rfc7231#section-6.6.1) | The MIME type in the Accept HTTP header is not acceptable. | [ProblemDetails](#schemaproblemdetails) |
+
+---
+*/}
+
+## Find basket by Id {{ tag: 'GET', label: '/basket' }}
+
+<Row>
+  <Col>
+    Retrieve detailed information about a specific basket, including its total value, merchant details and monthly installment payment schedule.
+
+    <Note>
+      Manage and track your basket purchases with the added convenience of viewing upcoming installment payments.
+    </Note>
+
+    <Properties title="Query parameters">
+      <Property name="basketId" type="integer">
+        The ID of the basket.
+      </Property>
+      <Property name="api-version" type="string">
+        The requested API version. The parameter is optional. Default value: `1.0`.
+      </Property>
+    </Properties>
+
+    <Properties title="Headers">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>X-Application-ID</span>} type="string">
+        The ID of the application making the request. This header parameter is required for authentication and identification purposes.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Ocp-Apim-Subscription-Key</span>} type="string">
+        A unique identifier related to the registered merchant in the snappi API environment, available within the application's details.
+      </Property>
+    </Properties>
+
+    <Properties title="Response attributes">
+      <Property name="basket" type="object">
+        The details of the basket including items and pricing:
+        - `id`: The ID of the basket.
+        - `dateCreated`: The date the basket was created.
+        - `basketValue`: The total value of the basket.
+        - `merchantId`: The ID of the merchant.
+        - `merchantName`: The name of the merchant.
+        - `requestId`: The ID of the request.
+        - `orderIdentifier`: The identifier of the order.
+        - `bnplAmount`: The Buy Now Pay Later amount.
+        - `basketProducts`: The list of products in the basket, including:
+          - `Product Number`: The product number.
+          - `name`: The name of the product.
+          - `quantity`: The quantity of the product.
+          - `Quantity Units`: The units of measurement.
+          - `Unit Price`: The price per unit.
+          - `Tax Rate`: The tax rate.
+          - `Total Amount`: The total amount.
+          - `Total Discount Amount`: The total discount amount.
+          - `Total Tax Amount`: The total tax amount.
+          - `Product URL`: The URL of the product.
+          - `Product Image URL`: The URL of the product image.
+        - `Merchant Data`: Data associated with the merchant.
+        - `phoneNumber`: The phone number associated with the order.
+        - `email`: The email address associated with the order.
+        - `merchantCode`: The code associated with the merchant.
+        - `merchantApplication`: The application associated with the merchant, including:
+          - `applicationId`: The unique identifier for the application.
+          - `successCallbackUrl`: The URL for successful payment.
+          - `failCallbackUrl`: The URL for failed payment.
+          - `created`: The date and time the basket was created.
+          - `successRedirectURI`: The URI for successful redirection.
+          - `failureRedirectURI`: The URI for failed redirection.
+        - `expirationDate`: The date the basket expires.
+        - `qrCodeData`: The data encoded in the QR code.
+        - `qrCodeDataLink`: The link to the QR code data.
+      </Property>    
+      <Property name="Monthly installments" type="array">
+        The monthly installments for the basket, including:
+        - `paymentDay`: The day of the month the payment is due.
+        - `paymentAmount`: The amount of the payment.
+        - `originalDueDate`: The original due date of the payment.
+      </Property>
+      <Property name="message" type="string">
+        A message associated with the basket.
+      </Property>
+      <Property name="errors" type="array">
+        An array of errors associated with the basket.
+      </Property>
+      <Property name="field" type="string">
+        The field associated with the error.
+      </Property>
+      <Property name="message" type="string">
+      The message associated with the error.
+      </Property>
+      <Property name="type" type="string">
+        The type or category of the response, indicating the nature or classification of the information provided.
+      </Property> 
+      <Property name="title" type="string">
+        The title of the response, providing a brief summary or heading for the information being returned. 
+      </Property> 
+      <Property name="status" type="integer">
+        The status of the response, indicating the success or failure of the request or operation.
+      </Property>
+      <Property name="detail" type="string">
+        A detailed description or explanation of the response, providing additional context or information.
+      </Property>
+      <Property name="instance" type="string">
+        The specific instance or occurrence to which the response pertains, providing a unique identifier or reference.
+      </Property>
+    </Properties>
+
+
+  </Col>
+
+  <Col sticky>
+    <CodeGroup title="Request" tag="GET" label="/basket">
+      ```bash {{ title: 'cURL' }}
+      curl -X GET /basket \
+        -H 'Accept: application/json' \
+        -H 'X-Application-ID: string' \
+        -H 'Ocp-Apim-Subscription-Key: string' 
+      ```
+
+    ```csharp
+var client = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Get, "//basket?basketId=<integer>&api-version=1.0");
+request.Headers.Add("X-Application-ID", "<string>");
+request.Headers.Add("Accept", "application/json");
+request.Headers.Add("Ocp-Apim-Subscription-Key", "<string>");
+var response = await client.SendAsync(request);
+response.EnsureSuccessStatusCode();
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+
+    ```      
+
+      ```php
+<?php
+
+require 'vendor/autoload.php';
+
+$headers = array(
+    'Accept' => 'application/json',
+    'X-Application-ID' => 'string',
+    'Ocp-Apim-Subscription-Key' => 'string',
+);
+
+$client = new \GuzzleHttp\Client();
+
+// Define array of request body.
+$request_body = array();
+
+try {
+    $response = $client->request('GET','/basket', array(
+        'headers' => $headers,
+        'json' => $request_body,
+       )
+    );
+    print_r($response->getBody()->getContents());
+ }
+ catch (\GuzzleHttp\Exception\BadResponseException $e) {
+    // handle exception or api errors.
+    print_r($e->getMessage());
+ }
+
+ // ...
+
+ ```
+
+
+```ruby
+require 'rest-client'
+require 'json'
+
+headers = {
+  'Accept' => 'application/json',
+  'X-Application-ID' => 'string',
+  'Ocp-Apim-Subscription-Key' => 'string'
+}
+
+result = RestClient.get '/basket',
+  params: {
+  }, headers: headers
+
+p JSON.parse(result)
+
+``` 
+
+
+```js
+const headers = {
+  'Accept':'application/json',
+  'X-Application-ID':'string',
+  'Ocp-Apim-Subscription-Key':'string'
+
+
+};
+
+fetch('/basket',
+{
+  method: 'GET',
+
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+
+```
+
+      ```python
+import requests
+headers = {
+  'Accept': 'application/json',
+  'X-Application-ID': 'string',
+  'Ocp-Apim-Subscription-Key': 'string'
+}
+
+r = requests.get('/basket', headers = headers)
+
+print(r.json())
+      ```
+
+```go
+package main
+
+import (
+       "bytes"
+       "net/http"
+)
+
+func main() {
+
+    headers := map[string][]string{
+        "Accept": []string{"application/json"},
+        "X-Application-ID": []string{"string"},
+        "Ocp-Apim-Subscription-Key": []string{"string"},
+
+    }
+
+    data := bytes.NewBuffer([]byte{jsonReq})
+    req, err := http.NewRequest("GET", "/basket", data)
+    req.Header = headers
+
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    // ...
+}
+
+```
+
+    </CodeGroup>
+
+  <Col sticky>
+    <CodeGroup title="Response examples">
+
+    ```json {{ title: '200' }}
+{
+  "basket": {
+    "id": "",
+    "dateCreated": "",
+    "basketValue": "",
+    "merchantId": "",
+    "merchantName": "",
+    "requestId": "",
+    "orderIdentifier": "",
+    "bnplAmount": "",
+    "basketProducts": [
+      {
+        "Product Number": "",
+        "name": "",
+        "quantity": "",
+        "Quantity Units": "",
+        "Unit Price": "",
+        "Tax Rate": "",
+        "Total Amount": "",
+        "Total Discount Amount": "",
+        "Total Tax Amount": "",
+        "Product URL": "",
+        "Product Image URL": ""
+      }
+    ],
+    "Merchant Data": "",
+    "phoneNumber": "",
+    "email": "",
+    "merchantCode": "",
+    "merchantApplication": {
+      "applicationId": "",
+      "successCallbackUrl": "",
+      "failCallbackUrl": "",
+      "created": "",
+      "successRedirectURI": "",
+      "failureRedirectURI": ""
+    },
+    "expirationDate": "",
+    "qrCodeData": "",
+    "qrCodeDataLink": ""
+  },
+  "monthlyInstallments": [
+    {
+      "paymentDay": "",
+      "paymentAmount": "",
+      "originalDueDate": ""
+    }
+  ]
+}
+    ```
+
+    ```json {{ title: '400' }}
+{
+  "message": "string",
+  "errors": [
+    {
+      "field": "string",
+      "message": "string"
+    }
+  ]
+}
+    ```
+
+    ```json {{ title: '404' }}
+{
+  "message": "string",
+  "errors": [
+    {
+      "field": "string",
+      "message": "string"
+    }
+  ]
+}
+    ```
+
+    ```json {{ title: '500' }}
+{
+  "type": "",
+  "title": "",
+  "status": "",
+  "detail": "",
+  "instance": ""
+}
+    ```
+
+    </CodeGroup> 
+  </Col>   
+
+  </Col>
+</Row>
+
+  ### Responses
+
+  | Status | Meaning                                                             | Description                                                | 
+  | ------ | ------------------------------------------------------------------- | ---------------------------------------------------------- |
+  | 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)             | The basket with the given id.                              | 
+  | 400    | [Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)    | BasketId cannot be equal or less than 0.                   | 
+  | 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)      | The basket with the given id was not found. / `X-Application-ID` not found.               | 
+  | 500    | [Internal Error](https://tools.ietf.org/html/rfc7231#section-6.6.1) | The MIME type in the Accept HTTP header is not acceptable. | 
+---
+
+## Create a new basket {{ tag: 'POST', label: '/basket' }}
+
+<Row>
+  <Col>
+    Generate a new basket in the Pay Later platform. 
+    
+    <Note>
+    Provide essential basket details such as product information and customer contact details. Initiate the payment process and receive a unique QR code or redirect URL for further transaction handling.
+    </Note>
+    
+
+
+    <Properties title="Query parameters">
+      <Property name="api-version" type="string">
+        The requested API version. The parameter is optional. Default value: `1.0`.
+      </Property>
+    </Properties>
+
+
+    <Properties title="Headers">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>X-Application-ID</span>} type="string">
+        The ID of the application making the request. This header parameter is required for authentication and identification purposes.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Ocp-Apim-Subscription-Key</span>} type="string">
+        A unique identifier related to the registered merchant in the snappi API environment, available within the application's details.
+      </Property>  
+    </Properties>
+
+
+    <Properties title="Body parameters">
+      <Property name="basketValue" type="double">
+        The total value of the basket.
+      </Property>
+      <Property name="requestId" type="string(uuid)">
+        The unique identifier for the request.
+      </Property>
+      <Property name="orderIdentifier" type="string">
+        The unique identifier for the order.
+      </Property>
+      <Property name="basketProducts" type="array">
+        An array containing the details of the products in the basket. Each element in the array should include information such as product name, price, quantity and any applicable discounts:
+        - `Product Number`: The Product Number parameter is used to specify the number associated with a product. It serves as a unique identifier for the specific product in the basket.
+        - `name`: The name of the product.
+        - `quantity`: The quantity parameter represents the quantity of a specific product in the basket. It indicates the number of units of the product included in the basket.
+        - `Quantity Units`: The Quantity Units parameter represents the units of measurement for the quantity of a product. It specifies the measurement units used to quantify the quantity of the product in the basket.
+        - `Unit Price`: The price per unit of a product. It indicates the cost of a single unit of the product in the basket.
+        - `Tax Rate`: The tax rate applied to the items in the basket.
+        - `Total Amount`: The total amount of the basket, including taxes and discounts.
+        - `Total Discount Amount`: The total amount of discounts applied to the basket. It includes any promotional discounts, coupon codes, or other deductions from the original basket value.
+        - `Total Tax Amount`: The total amount of tax applied to the basket. It includes any applicable sales tax, value-added tax (VAT), or other taxes charged on the products or services in the basket.
+        - `Product URL`: The URL of the product's webpage.
+        - `Product Image URL`: The URL of the product image.
+      </Property> 
+      <Property name="Merchant Data" type="string">
+        The Merchant Data parameter refers to additional data or information related to the merchant. It can include various details about the merchant, such as business information, contact details, or other relevant data.
+      </Property>
+      <Property name="phoneNumber" type="string">
+      The Phone Number parameter is used to specify the phone number of the user. It should be a valid phone number.
+      </Property>
+      <Property name="email" type="string">
+        The email parameter is used to specify the email address of the user. It should be a valid email address.
+      </Property>
+    </Properties> 
+
+    <Properties title="Response attributes">
+      <Property name="requestId" type="string">
+        The unique identifier for the request.
+      </Property>
+      <Property name="basketId" type="string">
+        The unique identifier the basket.
+      </Property>
+      <Property name="qrCodeData" type="string">
+        The data encoded in the QR code.
+      </Property> 
+      <Property name="message" type="string">
+        The message in the response.
+      </Property>      
+      <Property name="errors" type="string">
+        This parameter indicates any errors that occurred during the execution of the API request. It provides information about the specific error types, such as validation errors or server errors.
+        - `field`: The name of the field that caused the error.
+        - `message`: The error message associated with the field.
+      </Property>
+      <Property name="type" type="string">
+        The type or category of the response, indicating the nature or classification of the information provided.
+      </Property> 
+      <Property name="title" type="string">
+        The title of the response, providing a brief summary or heading for the information being returned. 
+      </Property> 
+      <Property name="status" type="integer">
+        The status of the response, indicating the success or failure of the request or operation.
+      </Property>
+      <Property name="detail" type="string">
+        A detailed description or explanation of the response, providing additional context or information.
+      </Property>
+      <Property name="instance" type="string">
+        The specific instance or occurrence to which the response pertains, providing a unique identifier or reference.
+      </Property>
+    </Properties>
+
+  </Col>
+
+  <Col sticky>
+    <CodeGroup title="Request" tag="POST" label="/basket">
+      ```bash {{ title: 'cURL' }}
+curl -X POST /basket \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json' \
+  -H 'X-Application-ID: string'  
+  -d '{
+  "basketValue": 0,
+  "requestId": "string",
+  "orderIdentifier": "string",
+  "basketProducts": [
+    {
+      "Product Number": "string",
+      "name": "string",
+      "quantity": 0,
+      "Quantity Units": "string",
+      "Unit Price": 0,
+      "Tax Rate": 0,
+      "Total Amount": 0,
+      "Total Discount Amount": 0,
+      "Total Tax Amount": 0,
+      "Product URL": "string",
+      "Product Image URL": "string"
+    }
+  ],
+  "Merchant Data": "string",
+  "phoneNumber": "string",
+  "email": "string"
+}'
+      ```
+
+      ```csharp
+var client = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Post, "//basket?api-version=1.0");
+request.Headers.Add("X-Application-ID", "<string>");
+request.Headers.Add("Accept", "application/json");
+var content = new StringContent("{\n  \"basketValue\": \"<double>\",\n  \"requestId\": \"<uuid>\",\n  \"orderIdentifier\": \"<string>\",\n  \"basketProducts\": [\n    {\n      \"Product Number\": \"<string>\",\n      \"name\": \"<string>\",\n      \"quantity\": \"<double>\",\n      \"Quantity Units\": \"<string>\",\n      \"Unit Price\": \"<double>\",\n      \"Tax Rate\": \"<double>\",\n      \"Total Amount\": \"<double>\",\n      \"Total Discount Amount\": \"<double>\",\n      \"Total Tax Amount\": \"<double>\",\n      \"Product URL\": \"<string>\",\n      \"Product Image URL\": \"<string>\"\n    },\n    {\n      \"Product Number\": \"<string>\",\n      \"name\": \"<string>\",\n      \"quantity\": \"<double>\",\n      \"Quantity Units\": \"<string>\",\n      \"Unit Price\": \"<double>\",\n      \"Tax Rate\": \"<double>\",\n      \"Total Amount\": \"<double>\",\n      \"Total Discount Amount\": \"<double>\",\n      \"Total Tax Amount\": \"<double>\",\n      \"Product URL\": \"<string>\",\n      \"Product Image URL\": \"<string>\"\n    }\n  ],\n  \"Merchant Data\": \"<string>\",\n  \"phoneNumber\": \"<string>\",\n  \"email\": \"<string>\"\n}", null, "application/json");
+request.Content = content;
+var response = await client.SendAsync(request);
+response.EnsureSuccessStatusCode();
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+
+      ```
+
+      ```php
+<?php
+
+require 'vendor/autoload.php';
+
+$headers = array(
+    'Content-Type' => 'application/json',
+    'Accept' => 'application/json',
+    'X-Application-ID' => 'string',
+);
+
+$client = new \GuzzleHttp\Client();
+
+// Define array of request body.
+$request_body = array();
+
+try {
+    $response = $client->request('POST','/basket', array(
+        'headers' => $headers,
+        'json' => $request_body,
+       )
+    );
+    print_r($response->getBody()->getContents());
+ }
+ catch (\GuzzleHttp\Exception\BadResponseException $e) {
+    // handle exception or api errors.
+    print_r($e->getMessage());
+ }
+
+ // ...
+
+      ```
+
+      ```ruby
+require 'rest-client'
+require 'json'
+
+headers = {
+  'Content-Type' => 'application/json',
+  'Accept' => 'application/json',
+  'X-Application-ID' => 'string'
+}
+
+result = RestClient.post '/basket',
+  params: {
+  }, headers: headers
+
+p JSON.parse(result)
+      ```
+
+      ```js
+const inputBody = '{
+  "basketValue": 0,
+  "requestId": "string",
+  "orderIdentifier": "string",
+  "basketProducts": [
+    {
+      "Product Number": "string",
+      "name": "string",
+      "quantity": 0,
+      "Quantity Units": "string",
+      "Unit Price": 0,
+      "Tax Rate": 0,
+      "Total Amount": 0,
+      "Total Discount Amount": 0,
+      "Total Tax Amount": 0,
+      "Product URL": "string",
+      "Product Image URL": "string"
+    }
+  ],
+  "Merchant Data": "string",
+  "phoneNumber": "string",
+  "email": "string"
+}';
+const headers = {
+  'Content-Type':'application/json',
+  'Accept':'application/json',
+  'X-Application-ID':'string'
+};
+
+fetch('/basket',
+{
+  method: 'POST',
+  body: inputBody,
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+
+      ```
+
+      ```python
+import requests
+headers = {
+  'Content-Type': 'application/json',
+  'Accept': 'application/json',
+  'X-Application-ID': 'string'
+}
+
+r = requests.post('/basket', headers = headers)
+
+print(r.json())
+
+      ```
+
+      ```go
+package main
+
+import (
+  "fmt"
+  "strings"
+  "net/http"
+  "io/ioutil"
+)
+
+func main() {
+
+  url := "//basket?api-version=1.0"
+  method := "POST"
+
+  payload := strings.NewReader(`{
+  "basketValue": "<double>",
+  "requestId": "<uuid>",
+  "orderIdentifier": "<string>",
+  "basketProducts": [
+    {
+      "Product Number": "<string>",
+      "name": "<string>",
+      "quantity": "<double>",
+      "Quantity Units": "<string>",
+      "Unit Price": "<double>",
+      "Tax Rate": "<double>",
+      "Total Amount": "<double>",
+      "Total Discount Amount": "<double>",
+      "Total Tax Amount": "<double>",
+      "Product URL": "<string>",
+      "Product Image URL": "<string>"
+    },
+    {
+      "Product Number": "<string>",
+      "name": "<string>",
+      "quantity": "<double>",
+      "Quantity Units": "<string>",
+      "Unit Price": "<double>",
+      "Tax Rate": "<double>",
+      "Total Amount": "<double>",
+      "Total Discount Amount": "<double>",
+      "Total Tax Amount": "<double>",
+      "Product URL": "<string>",
+      "Product Image URL": "<string>"
+    }
+  ],
+  "Merchant Data": "<string>",
+  "phoneNumber": "<string>",
+  "email": "<string>"
+}`)
+
+  client := &http.Client {
+  }
+  req, err := http.NewRequest(method, url, payload)
+
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  req.Header.Add("X-Application-ID", "<string>")
+  req.Header.Add("Content-Type", "application/json")
+  req.Header.Add("Accept", "application/json")
+
+  res, err := client.Do(req)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  defer res.Body.Close()
+
+  body, err := ioutil.ReadAll(res.Body)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  fmt.Println(string(body))
+}
+      ```
+
+
+
+    </CodeGroup>
+
+  <Col sticky>
+    <CodeGroup title="Response examples">
+
+    ```json {{ title: '201' }}
+{
+  "requestId": "",
+  "basketId": "",
+  "qrCodeData": "",
+  "redirectUrl": ""
+}
+    ```
+
+    ```json {{ title: ' 400' }}
+{
+  "message": "",
+  "errors": [
+    {
+      "field": "",
+      "message": ""
+    }
+  ]
+}
+    ```
+
+    ```json {{ title: ' 500' }}
+{
+  "type": "",
+  "title": "",
+  "status": "",
+  "detail": "",
+  "instance": ""
+}
+    ```
+
+    </CodeGroup> 
+  </Col>  
+
+  </Col>
+</Row>
+
+
+### Responses
+
+| Status | Meaning                                                             | Description                                                                                                                                                | 
+| ------ | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 201    | [Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)        | The created basket.                                                                                                                                        | 
+| 400    | [Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)    | Invalid request parameters. / Basket's merchant was not found. / `basketValue` does not comply with merchant's BNPL limits. / `X-Application-ID` not found.          |
+| 500    | [Internal Error](https://tools.ietf.org/html/rfc7231#section-6.6.1) | Internal server error.                                                                                                                                     | 
+---
+

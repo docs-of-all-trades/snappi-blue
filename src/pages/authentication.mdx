@@ -1,0 +1,96 @@
+export const description =
+  'In this guide, we’ll look at how authentication works. snappi offers two ways to authenticate your API requests: Basic authentication and OAuth2 with a token.'
+
+# Authentication
+
+You'll need to authenticate your requests to access any of the endpoints in the snappi API. Let's have a look at how authentication works. {{ className: 'lead' }}
+
+
+## Key aspects
+
+When developing or using RESTful APIs, one of the fundamental concepts you need to understand is authentication. Authentication is the process of verifying the identity of a user or system. It's crucial for securing your API and ensuring that only authorized users can access it. This section will guide you through the basics of authentication in REST APIs, covering key methods and best practices.
+
+Authentication is the first step in a security process designed to protect an API. It is often confused with authorization, but it's important to distinguish the two:
+- Authentication verifies who you are.
+- Authorisation determines what resources you can access.
+
+## Authentication methods
+
+There are several methods to authenticate users in REST APIs. Here are the most commonly used ones:
+
+1. **Basic Authentication**
+
+Basic Authentication is a simple authentication scheme built into the HTTP protocol. It sends a user name and password with each request, typically encoded in Base64. However, because it's not encrypted, Basic Authentication should always be used over HTTPS to prevent credentials from being intercepted.
+
+
+2. **API Keys**
+
+An API key is a unique identifier used to authenticate a user, developer, or calling program to an API. While API keys are easy to implement, they do not provide a high level of security if exposed. Therefore, they are often used in conjunction with other security measures.
+
+3. **OAuth**
+
+OAuth is a more secure and flexible method for authentication and authorization. It allows users to approve one application interacting with another on their behalf without giving away their password. OAuth 2.0 is the most widely used standard for authentication in APIs and supports several "flows" for different use cases, such as web applications, mobile apps, and server-to-server applications.
+
+4. **Token authentication**
+
+Token authentication, often used with OAuth, involves the server creating a token for the client after successfully authenticating their credentials. The client then uses this token for subsequent requests. Tokens are typically short-lived and can be revoked by the server at any time, making them more secure than static API keys.
+
+## Best Practices 
+
+To ensure the security of your API, follow these best practices:
+
+- **Use HTTPS**: Always use HTTPS to encrypt data in transit, especially when sending sensitive information such as passwords and tokens.
+
+- **Store credentials securely**: Never store passwords in plain text. Use strong hashing algorithms to store passwords securely.
+
+- **Implement rate limiting**: Protect your API from brute force attacks by limiting the number of authentication attempts from a single IP address.
+
+- **Monitor and log access**: Keep an eye on who accesses your API and how they use it. Logging can help you detect and respond to unauthorized access attempts.
+
+- **Regularly review and update your security measures**: As technology evolves, so do security threats. Regularly review your authentication methods and update them as needed to maintain a high level of security.
+
+<Important>
+By understanding and implementing the right authentication methods for your API, you can protect your data and ensure that only authorized users have access.
+</Important>
+
+
+{/*
+<Note>
+  snappi offers two ways to authenticate your API requests: **Basic authentication** and **OAuth2** with a token — **OAuth2** is the recommended way. 
+</Note>
+
+## Basic authentication
+
+With basic authentication, you use your username and password to authenticate your HTTP requests. Unless you have a very good reason, you probably shouldn't use basic auth. Here's how to authenticate using cURL:
+
+```bash {{ title: 'Example request with basic auth' }}
+
+
+```
+
+
+
+## OAuth2 with bearer token
+
+The recommended way to authenticate with the snappi API is by using OAuth2. When establishing a connection using OAuth2, you will need your access token — you will find it in the [snappi dashboard](#) under API settings. Here's how to add the token to the request header using cURL:
+
+```bash {{ title: 'Example request with bearer token' }}
+
+
+```
+
+Always keep your token safe and reset it if you suspect it has been compromised.
+
+## Using an SDK
+
+If you use one of our official SDKs, you won't have to worry about any of the above — fetch your access token from the [snappi dashboard](#) under API settings, and the client library will take care of the rest. All the client libraries use OAuth2 behind the scenes.
+
+<div className="not-prose">
+  <Button
+    href="/sdks"
+    variant="text"
+    arrow="right"
+    children="Check out our list of first-party SDKs"
+  />
+</div>
+*/}

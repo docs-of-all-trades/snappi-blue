@@ -1,0 +1,169 @@
+import { Collapse } from "../components/Collapse"
+import { Tab } from '@headlessui/react'
+import { Steps, Step, StepImage } from '../components/Step'
+import Image from 'next/image'
+
+
+export const description =
+  'On this page, we’ll dive into the snappi Pay Later functionality.'
+
+# Pay Later
+
+{/*
+<>
+  <p>
+    <img src="/snappi_pay_later.png" alt="Alt text" title="title" />
+  </p>
+</>
+*/}
+
+The snappi Pay Later method allows you to repay the cost of your purchase over time instead of all at once. {{ className: 'lead' }}
+This payment flexibility typically leads to better conversion rates as well as higher cart values. {{ className: 'lead' }}
+
+<Note>
+  This API allows you to interact with Baskets and Merchants related to the Buy Now Pay Later functionality.
+</Note>
+---
+
+The following diagram  illustrates the process by which you can finalize a purchase and choose to pay later in installments. 
+
+
+{/* <>
+  <p><img src="/Buy-Now-Pay-Later-API-flow.webp" alt="snappi" title="title" /></p>
+</> */}
+
+      <Image 
+        src="/Buy-Now-Pay-Later-API-flow.webp" 
+        alt="Pay Later API flow" 
+        width={800} 
+        height={600} 
+        sizes="(max-width: 800px) 100vw, 800px"
+      />
+
+Here is a step-by-step explanation of each component and action within the flow:
+
+
+<Steps>
+
+  <Step number={1} title="Finalize Basket.">
+    Complete your shopping and finalize your basket. Prepare to check out.
+  </Step>
+
+  <Step number={2} title="Basket Checkout.">
+    Proceed to the checkout phase, review your basket content and proceed to payment options.
+  </Step>
+
+  <Step number={3} title="Select Pay Later Payment Option.">
+    At this stage, select the <strong>Pay Later</strong> payment option from the available payment methods.
+  </Step>
+
+<Step number={4} title="Agree with Terms.">
+  <p>A decision point where you must agree to the terms and conditions associated with the Pay Later option.</p>
+  <ul>
+    <li>
+      <>
+        If you agree:
+        <ul>
+          <li>Proceed to the next step.</li>
+        </ul>
+      </>
+    </li>
+    <li>
+      <>
+        If you disagree:
+        <ul>
+          <li>The process terminates, and you is redirected back to the basket checkout or another suitable screen.</li>
+        </ul>
+      </>
+    </li>
+  </ul>
+</Step>
+
+  <Step number={5} title="Check Basket Eligibility.">
+    The system checks if the basket qualifies for the Pay Later option. This involves evaluating the basket contents against predefined criteria such as total amount, product types, and your creditworthiness.
+  </Step>
+
+  <Step number={6} title="Show Monthly Installments.">
+    If the basket is eligible, the system displays the monthly installment options to you.
+  </Step>
+
+<Step number={7} title="Agree to Proceed.">
+  <p>Another decision point where you must confirm their agreement to proceed with the displayed installment plan.</p>
+  <ul>
+    <li>
+      <>
+        If you agree:
+        <ul>
+          <li>Proceed to create the basket.</li>
+        </ul>
+      </>
+    </li>
+    <li>
+      <>
+        If you disagree:
+        <ul>
+          <li>The process terminates, and you are redirected back to the basket checkout or another suitable screen.</li>
+        </ul>
+      </>
+    </li>
+  </ul>
+</Step>
+
+  <Step number={8} title="Create Basket.">
+    The system creates a basket that includes all the items you intend to purchase under the Pay Later plan.
+
+    <Bulb>
+      Pay Later in [Sandbox](#pay-later-sandbox) environment has the same functionality as described above, but since this is a testing environment the flow terminates at this point, right after the [Create a new basket](#basket#create-a-new-basket) endpoint is called. The rest of the process cannot be tested since there is no mobile application for testing purposes. With the appropriate values in the query parameters, you can mock a successful/failed Pay Later journey and check the Pay Later functionality with the [Create a mock transaction](pay-later-sandbox#create-a-mock-transaction) API call.
+    </Bulb>
+
+  </Step>
+
+  <Step number={9} title="Start Pay Later Journey.">
+    Your journey to complete the Pay Later process begins. This phase involves multiple steps to finalize the Pay Later agreement.
+  </Step>
+
+  <Step number={10} title="Redirect to Pay Later Progress Screens.">
+    You are redirected to a series of progress screens that provide real-time updates on the Pay Later process. This phase is crucial for maintaining customer engagement and providing transparency throughout the transaction.
+    <ul>
+      <li>**Display QR Code, Expiration, and Installments**: The system displays a QR code for the transaction, along with details about the installment plan and the expiration date of the offer. The QR code is displayed in order for you to scan it and start the Pay Later journey in your mobile app.</li>
+      <li>**Basket Expired Screen**: If it takes too long to complete the process, the basket expires, and this screen informs you of the expiration and provides options to restart or return to the basket.</li>
+      <li>**Basket Success/Failure Screen**: Upon completion of the transaction process, this screen provides feedback on whether the Pay Later transaction was successful or failed.</li>
+    </ul>
+
+  </Step>
+
+<Step number={11} title="Pay Later Succeeded?">
+  <p>A final decision point where the system checks if the Pay Later transaction was successful.</p>
+  <ul>
+    <li>
+      <>
+        If the transaction succeeded:
+        <ul>
+          <li>Redirect to the Merchant’s Success Screen.</li>
+        </ul>
+      </>
+    </li>
+    <li>
+      <>
+        If the transaction failed:
+        <ul>
+          <li>Redirect to the Merchant’s Failure Screen.</li>
+        </ul>
+      </>
+    </li>
+  </ul>
+</Step>
+
+  <Step number={12} title="Merchant’s Success Screen.">
+    If the transaction is successful, you are redirected to a success screen provided by the merchant. This screen typically includes a confirmation message and details of the purchase.
+  </Step>
+
+  <Step number={13} title="Merchant’s Failure Screen.">
+    If the transaction fails, you are redirected to a failure screen provided by the merchant. This screen typically includes an error message and options for you to try again or select a different payment method.
+  </Step>
+
+</Steps>
+
+
+
+

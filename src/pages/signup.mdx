@@ -1,0 +1,104 @@
+import { Tab } from '@headlessui/react'
+import { Steps, Step, StepImage } from '../components/Step'
+import { EnvironmentSpecificContent } from '../components/EnvironmentSpecificContent'
+//import Link from 'next/link'
+import Image from 'next/image'
+export const description =
+  'This guide will get you all set up and ready to use the Snappi developers portal.'
+
+# Sign Up
+Create a new account on the <strong>Snappi developers portal</strong> and also leverage the power of our sandbox.  {{ className: 'lead' }}
+
+<Bulb>
+Creating an account only exists for PSD2. Merchants (Pay Later) should contact Snappi first and obtain an account.
+</Bulb>
+
+<Steps>
+  <Step number={1} title="Enter the Snappi developers portal.">
+    Use your preferred browser and navigate to <a target='_blank' href={process.env.NEXT_PUBLIC_SNAPPI_DOCS_PUBLIC_API_URL} className="text-teal-500 hover:underline">{process.env.NEXT_PUBLIC_SNAPPI_DOCS_PUBLIC_API_URL}</a> in order to register and gain access in PSD2 & Pay Later APIs.
+
+  <EnvironmentSpecificContent environment="UAT">
+    The sandbox is also available at <a target='_blank' href={process.env.NEXT_PUBLIC_SNAPPI_SANDBOX_PUBLIC_API_URL} className="text-teal-500 hover:underline">{process.env.NEXT_PUBLIC_SNAPPI_SANDBOX_PUBLIC_API_URL}</a> in order to register and gain access in PSD2 APIs.
+  </EnvironmentSpecificContent>
+    <Note>
+    The sandbox is a virtual environment that provides developers with a secure space to experiment with API integrations without affecting live production.
+    </Note>
+    <div className="mt-4">
+      <Image 
+        src="/snappiDev-login.webp" 
+        alt="Developers portal" 
+        width={800} 
+        height={600} 
+        sizes="(max-width: 800px) 100vw, 800px"
+      />
+    </div>
+  </Step>
+ 
+  
+  <Step number={2} title="Create an account. ">
+    The page prompts you to click on <strong>Create an account</strong>, if you don't have one.
+  </Step>
+  
+  <Step number={3} title="Submit your personal information.">
+    Enter the <strong>Sign Up</strong> landing page.Fill in the <strong>First Name</strong> and <strong>Last Name</strong> fields.
+    <div className="mt-4">
+      <Image 
+        src="/snappiDev-signup.webp" 
+        alt="Developers portal" 
+        width={800} 
+        height={600} 
+        sizes="(max-width: 800px) 100vw, 800px"
+      />
+    </div>
+  </Step>
+  <Step number={4} title="Enter your email address.">
+    Fill in the <strong>Email</strong> field.
+  </Step> 
+  <Step number={5} title="Create a password.">
+    You are prompted to create a password with certain criteria. While typing, every one that you meet is lowlighted until you reach all the required criteria.
+  </Step>   
+  <Step number={6} title="Confirm your newly formed password.">
+    Re-enter your password in the <strong>Confirm password</strong> field to ensure it matches.
+  </Step>
+  <Step number={7} title="Complete the Sign Up.">
+    Click the signup button and create your profile.
+  </Step> 
+  <Step number={8} title="You are all set!">
+    You have successfully created an account.
+  </Step>
+  <Step number={9} title="Access the login page.">
+    Now that you have an account, click the <strong>Back to login</strong> link to access the login page.
+  </Step>
+  <Step number={10} title="Login to your account.">
+    Enter your email and password to log in to your account.
+  </Step>
+  <Step number={11} title="Forgot password?">
+      If you forgot your password, click the <strong>Forgot password?</strong> link to retrieve it.
+  </Step>
+  <Step number={12} title="Reset your password.">
+    Enter your email address to receive a password reset link. Press the <strong>Email Link</strong> button. You will receive an email with access to a link and certain intructions.
+    <div className="mt-4">
+      <Image 
+        src="/snappiDev-reset-pwd.webp" 
+        alt="Developers portal" 
+        width={800} 
+        height={600} 
+        sizes="(max-width: 800px) 100vw, 800px"
+      />
+    </div>
+  </Step>
+  <Step number={13} title="Check your email.">
+    Click the link in the email to reset your password. Enter your new password and confirm it. Press the <strong>Reset Password</strong> button.
+    <div className="mt-4">
+      <Image 
+        src="/snappiDev-reset-pwd-success.webp" 
+        alt="Developers portal" 
+        width={800} 
+        height={600}
+        sizes="(max-width: 800px) 100vw, 800px"
+      />
+    </div>
+  </Step>
+</Steps>
+
+

@@ -1,0 +1,87 @@
+@layer base {
+  /* ... (keep existing base styles) ... */
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.nav-item {
+  /* ... (keep existing nav-item styles) ... */
+}
+
+.nav-item-active {
+  /* ... (keep existing nav-item-active styles) ... */
+}
+
+.nav-item:focus {
+  /* ... (keep existing nav-item focus styles) ... */
+}
+
+@layer components {
+  .table-container {
+    @apply w-full max-w-4xl mx-auto p-4;
+  }
+
+  .table-title {
+    @apply text-2xl font-bold mb-4;
+  }
+
+  .table-wrapper {
+    @apply border border-gray-300 rounded-lg overflow-hidden;
+  }
+
+  .table {
+    @apply w-full border-collapse;
+  }
+
+  .table thead {
+    @apply bg-gray-100;
+  }
+
+  .table th {
+    @apply border-b border-gray-300 p-2 text-left font-semibold;
+  }
+
+  .table td {
+    @apply border-b border-gray-300 p-2;
+  }
+
+  /* Styling for all columns to ensure they have consistent padding and borders */
+  .table td, .table th {
+    @apply px-4 py-2; /* Consistent padding for all cells */
+  }
+
+  /* Specific styling for the first column (Status) */
+  .table th:first-child, .table td:first-child {
+    @apply text-center w-24; /* Center alignment and fixed width for first column */
+  }
+
+  /* Specific styling for the second column (Description or Meaning) */
+  .table th:nth-child(2), .table td:nth-child(2) {
+    @apply text-left; /* Left alignment for second column */
+  }
+
+  /* Styling for the third column in 3-column tables (Description) */
+  .table th:nth-child(3), .table td:nth-child(3) {
+    @apply text-left; /* Left alignment for third column */
+  }
+
+
+  /* Adding rounded corners for the top and bottom rows */
+  .table tr:first-child th:first-child {
+    @apply rounded-tl-lg;
+  }
+
+  .table tr:first-child th:last-child {
+    @apply rounded-tr-lg;
+  }
+
+  .table tr:last-child td:first-child {
+    @apply rounded-bl-lg;
+  }
+
+  .table tr:last-child td:last-child {
+    @apply rounded-br-lg;
+  }
+}

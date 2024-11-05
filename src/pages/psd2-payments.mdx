@@ -1,0 +1,4091 @@
+import Image from 'next/image'
+import { Steps, Step } from '../components/Step'
+
+export const description =
+  'On this page, we’ll dive into the PSD2 Payments API. This API is used to initiate and update payment requests, as well as obtain status information for a payment. By accessing this API, you can seamlessly handle payment requests and obtain real-time updates on payment status, simplifying the payment initiation process for your application.'
+
+# Payments
+
+Initiate and update payment requests, as well as obtain status information for a payment. Manage payment initiation seamlessly and track the progress of your payments. {{ className: 'lead' }}
+
+<Note>
+With Payments API, you can easily handle payment requests and obtain real-time updates on payment status, simplifying the payment initiation process for your application.
+</Note>
+
+The following diagram depicts the flow for initiating and authorizing a payment through our API, in compliance with PSD2. The diagram outlines the sequence of actions and decisions required to successfully execute a payment.
+
+{/* <>
+  <p><img src="/payments-api-flow.png" alt="snappi" title="title" width={1280}/></p>
+</> */}
+
+      <Image 
+        src="/PSD2-Payments-API-flow.webp" 
+        alt="Payments API flow" 
+        width={800} 
+        height={600} 
+        sizes="(max-width: 800px) 100vw, 800px"
+      />
+
+
+Here is a step-by-step explanation of each component and action within the flow:
+
+<Steps>
+
+  <Step number={1} title="Login & Authentication">
+    The flow begins with user authentication, where you are redirected and required to authenticate before proceeding with any payment operation.
+  </Step>
+
+  <Step number={2} title="Account selection">
+    After authentication, you are presented with a list of accounts to choose from. Select the account from which you want to make the payment.
+  </Step>
+
+  <Step number={3} title="Payment initiation & options">
+    Once you choose an account, the payment is initialized and created with a status (created or failed). 
+  </Step>
+
+  <Step number={4} title="OTP verification">
+    Move on to the OTP verification step to confirm and verify the transaction. This step is key to ensuring the authorization process is secure.
+  </Step>
+
+  <Step number={5} title="Final confirmation">
+    After OTP verification, the payment is finalized and the system processes the request, completing the process. If verification fails or maximum OTP attempts are reached, the flow rejects the process.
+  </Step>
+
+</Steps>       
+
+---
+
+## Initiate payment {{ tag: 'POST', label: '/v1/{payment-service}/{payment-product}' }}
+
+<Row>
+  <Col>
+    Initiate a secure payment transaction. 
+    
+    <Note>
+    Provide essential transaction details such as debtor / creditor information, instructed amounts and remittance information to successfully process payments.
+    </Note>
+
+
+    <Properties title="Path parameters">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-service</span>} type="string">
+      The type of payment service used to initiate the payment. Available options: **_payments_**.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-product</span>} type="string">
+      The product or service for which the payment is being initiated. Available options: **_internal-transfers_**, **_sepa-credit-transfers_**.
+      </Property>
+    </Properties>
+
+    <Properties title="Headers">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>x-Request-ID</span>} type="string(uuid)">
+        ID of the request, unique to the call, as determined by the initiating party.
+      </Property>     
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Certificate</span>} type="string">
+      The certificate used for signature verification (<strong>Certificate</strong> on Devs Portal App).
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>ClientId</span>} type="string">
+      The client ID associated with the request (<strong>Application ID</strong> on Devs Portal App).
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>pSUIPAddress</span>} type="string">
+      The IP address of the Payment Service User (PSU).
+      </Property>       
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>PSU_ID</span>} type="string">
+        The PSU's ID, as determined by the PSU. This ID is the identification of the PSU within the ASPSP and should contain the web user's username that requests the consent or initiates the payment.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>consentID</span>} type="string">
+        The unique identifier of the consent for the payment.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Ocp-Apim-Subscription-Key</span>} type="string">
+        A unique identifier related to the registered merchant in the Snappi API environment, available within the application's details (<strong>Subscription Key</strong> on Devs Portal App).
+      </Property>                                    
+    </Properties>
+
+    <Properties title="Body parameters">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>endToEndIdentification</span>} type="string">
+        Unique identifier for the end-to-end transaction.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>debtorAccount</span>} type="object">
+      Information about the debtor's account, including: 
+      - `iban`: The International Bank Account Number (IBAN) of the creditor.
+      - `bban`: The Basic Bank Account Number (BBAN) of the creditor's account. 
+      - `pan`: The Primary Account Number of the payer's card.             
+      - `maskedPan`: The masked Primary Account Number(PAN) of the payer's card.
+      - `msisdn`: The mobile phone number of the payer.
+      - `currency`: The currency in which the payment is to be made.             
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>instructedAmount</span>} type="object">
+      The instructed amount for the payment, including:
+      - `currency`: The currency in which the payment is to be made.       
+      - `Amount`: Placeholder for the amount parameter.      
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>creditorAccount</span>} type="object">
+      The account number of the creditor, including:
+      - `iban`: The International Bank Account Number (IBAN) of the creditor.
+      - `bban`: The Basic Bank Account Number (BBAN) of the creditor account. 
+      - `pan`: The Primary Account Number (PAN) of the payer's card.           
+      - `maskedPan`: The masked PAN of the creditor account. 
+      - `msisdn`: The mobile phone number of the payer.
+      - `currency`: The currency in which the payment is to be made.      
+      </Property>
+      <Property name="creditorAgent" type="string">
+      The clearing agent or institution of the creditor.
+      </Property>
+      <Property name="creditorAgentName" type="string">
+      The name of the clearing agent or institution of the creditor.
+      </Property>
+      <Property name="creditorName" type="string">
+      The name of the creditor.
+      </Property>      
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>creditorAddress</span>} type="object">
+      The address of the creditor, including:
+      - `buildingNumber`: The building number of the creditor address.
+      - `city`: The city of the creditor address.  
+      - `country`: The country of the creditor address.
+      - `postalCode`: The postal code of the creditor address.                       
+      - `street`: The street name of the creditor address. 
+      </Property> 
+      <Property name="remittanceInformationUnstructured" type="string">
+      The unstructured remittance information for the payment.
+      </Property>
+    </Properties>    
+
+    <Properties title="Response attributes">
+      <Property name="transactionStatus" type="string">
+        The status of the transaction (integer). Available options: Description: `ACCC`, `ACCP`, `ACSC`, `ACSP`, `ACTC`, `ACWC`, `ACWP`, `RCVD`, `PDNG`, `RJCT`, `CANC`, `ACFC`, `PATC`, `PART`.
+      </Property> 
+      <Property name="paymentId" type="string">
+      The unique identifier assigned to the payment.
+      </Property> 
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>transactionFees</span>} type="object">
+      Details regarding any fees associated with the transaction, including:
+      - `currency`: The currency of the fees.      
+      - `Amount`: Placeholder for the amount parameter.
+      </Property>
+      <Property name="transactionFeeIndicator" type="boolean">
+      Indicates if transaction fees apply to the payment.
+      </Property>
+      <Property name="scaMethods" type="array">
+        Specifies the Strong Customer Authentication (SCA) methods available for the payment. Each method in the list has the following attributes:
+
+        - `authenticationType`: The type of authentication used, such as SMS OTP, push notification, etc. Available options: **_0_** - **_3_**.
+        - `authenticationVersion`: The version of the authentication method implemented.
+        - `authenticationMethodId`: The ID of the authentication method. 
+        - `name`: A human-readable name for the authentication method.               
+        - `explanation`: A brief explanation or description of the authentication method.
+      </Property> 
+      <Property name="chosenScaMethod" type="object">
+      Specifies the chosen SCA method for authentication during the payment process. It has the same attributes as the `scaMethods` list:
+      - `authenticationType` (integer): The type of authentication used, such as SMS OTP, push notification, etc. Available options: **_0_** - **_3_**.
+      - `authenticationVersion`: The version of the authentication method implemented.
+      - `authenticationMethodId`: The ID of the authentication method.
+      - `name`: A human-readable name for the authentication method.      
+      - `explanation`: A brief explanation or description of the authentication method.
+      </Property>                               
+      <Property name="challengeData" type="object">
+      Data related to the challenge for authentication. It includes:
+        - `image`: An image associated with the payment transaction.          
+        - `data`: Contains relevant data related to the payment transaction.
+        - `imageLink`: A link to an image associated with the payment transaction.
+        - `optMaxLength` (integer): The maximum length of the One-Time Password (OTP), if OTP is used for the challenge.        
+        - `optFormat` (integer): The format of the OTP (e.g., numeric, alphanumeric).         
+        - `additionalInformation`: Any additional information related to the payment.
+      </Property> 
+      <Property name="links" type="object">
+      Links to other resources related to the payment.
+      </Property>      
+      <Property name="tppMessages" type="array">
+      Messages from the Third-Party Provider (TPP) related to the payment, including:
+      - `category` (integer): Categorizes the payment transaction. Available options: **_0_**, **_1_**.
+      - `code` (integer): A unique code associated with the payment. Available options: **_0_**.
+      - `path` (string): The path followed during the payment process.
+      - `text` (string): The text response returned by the API.
+      </Property>
+      <Property name="paymentService" type="array">
+      The payment service that was used for the payment.
+      </Property>
+      <Property name="paymentProduct" type="array">
+      The payment product that was used for the payment.
+      </Property> 
+      <Property name="customerPhone" type="string">
+      The phone number of the customer.
+      </Property>           
+      <Property name="statusCode" type="integer">
+      The status code of the payment initiation. Available options: **_0_**, **_1_**.
+      </Property>
+      <Property name="links" type="object">
+      Links associated with the response.
+      </Property>      
+    </Properties>  
+
+
+  </Col>
+
+  <Col sticky>
+    <CodeGroup title="Request" tag="POST" label="/v1/{payment-service}/{payment-product}">
+      ```bash {{ title: 'cURL' }}
+curl -X POST /v1/{payment-service}/{payment-product} \
+  -H 'X-Request-ID: string' \
+  -H 'Certificate: string' \
+  -H 'ClientId: string' \
+  -H 'pSUIPAddress: string' \
+  -H 'PSU_ID: string' \
+  -H 'consentID: string' \
+  -H 'Ocp-Apim-Subscription-Key: string' \
+  -d '{"endToEndIdentification":"string","debtorAccount":{"iban":"string","bban":"string","pan":"string","maskedPan":"string","msisdn":"string","currency":"string"},"instructedAmount":{"currency":"string","Amount":"string"},"creditorAccount":{"iban":"string","bban":"string","pan":"string","maskedPan":"string","msisdn":"string","currency":"string"},"creditorAgent":"string","creditorAgentName":"string","creditorName":"string","creditorAddress":{"street":"string","buildingNumber":"string","city":"string","postalCode":"string","country":"string"},"remittanceInformationUnstructured":"string"}'
+      ```
+
+      ```csharp
+var client = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Post, "//v1/<string>/<string>");
+request.Headers.Add("X-Request-ID", "<uuid>");
+request.Headers.Add("Certificate", "<string>");
+request.Headers.Add("ClientId", "<string>");
+request.Headers.Add("pSUIPAddress", "<string>");
+request.Headers.Add("PSU_ID", "<string>");
+request.Headers.Add("consentID", "<string>");
+request.Headers.Add("Ocp-Apim-Subscription-Key", "<string>");
+request.Headers.Add("Accept", "application/json");
+var content = new StringContent("{\n  \"creditorAccount\": {\n    \"currency\": \"<string>\",\n    \"iban\": \"<string>\",\n    \"bban\": \"<string>\",\n    \"pan\": \"<string>\",\n    \"maskedPan\": \"<string>\",\n    \"msisdn\": \"<string>\"\n  },\n  \"creditorName\": \"<string>\",\n  \"instructedAmount\": {\n    \"Amount\": \"<string>\",\n    \"currency\": \"<string>\"\n  },\n  \"endToEndIdentification\": \"<string>\",\n  \"debtorAccount\": {\n    \"currency\": \"<string>\",\n    \"iban\": \"<string>\",\n    \"bban\": \"<string>\",\n    \"pan\": \"<string>\",\n    \"maskedPan\": \"<string>\",\n    \"msisdn\": \"<string>\"\n  },\n  \"creditorAgent\": \"<string>\",\n  \"creditorAgentName\": \"<string>\",\n  \"creditorAddress\": {\n    \"country\": \"<string>\",\n    \"street\": \"<string>\",\n    \"buildingNumber\": \"<string>\",\n    \"city\": \"<string>\",\n    \"postalCode\": \"<string>\"\n  },\n  \"remittanceInformationUnstructured\": \"<string>\"\n}", null, "application/json");
+request.Content = content;
+var response = await client.SendAsync(request);
+response.EnsureSuccessStatusCode();
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+      ```
+
+      ```php {{ title: 'PHP' }}
+<?php
+
+require 'vendor/autoload.php';
+
+$headers = array(
+    'Content-Type' => 'application/json',
+    'Accept' => 'application/json',
+    'X-Request-ID' => 'string',
+    'Certificate' => 'string',
+    'ClientId' => 'string',
+    'pSUIPAddress' => 'string',
+    'PSU_ID' => 'string',
+    'consentID' => 'string',
+    'Ocp-Apim-Subscription-Key' => 'string',
+);
+
+$client = new \GuzzleHttp\Client();
+
+// Define array of request body.
+$request_body = array();
+
+try {
+    $response = $client->request('POST','/v1/{payment-service}/{payment-product}', array(
+        'headers' => $headers,
+        'json' => $request_body,
+       )
+    );
+    print_r($response->getBody()->getContents());
+ }
+ catch (\GuzzleHttp\Exception\BadResponseException $e) {
+    // handle exception or api errors.
+    print_r($e->getMessage());
+ }
+
+ // ...
+      ```
+
+      ```ruby {{ title: 'Ruby' }}
+require 'rest-client'
+require 'json'
+
+headers = {
+  'Content-Type' => 'application/json',
+  'Accept' => 'application/json',
+  'X-Request-ID' => 'string',
+  'Certificate' => 'string',
+  'ClientId' => 'string',
+  'pSUIPAddress' => 'string',
+  'PSU_ID' => 'string',
+  'consentID' => 'string',
+  'Ocp-Apim-Subscription-Key' => 'string'
+}
+
+result = RestClient.post '/v1/{payment-service}/{payment-product}',
+  params: {
+  }, headers: headers
+
+p JSON.parse(result)
+      ```
+
+      ```javascript {{ title: 'Javascript' }}
+const inputBody = '{
+  "endToEndIdentification": "string",
+  "debtorAccount": {
+    "iban": "string",
+    "bban": "string",
+    "pan": "string",
+    "maskedPan": "string",
+    "msisdn": "string",
+    "currency": "string"
+  },
+  "instructedAmount": {
+    "currency": "string",
+    "Amount": "string"
+  },
+  "creditorAccount": {
+    "iban": "string",
+    "bban": "string",
+    "pan": "string",
+    "maskedPan": "string",
+    "msisdn": "string",
+    "currency": "string"
+  },
+  "creditorAgent": "string",
+  "creditorAgentName": "string",
+  "creditorName": "string",
+  "creditorAddress": {
+    "street": "string",
+    "buildingNumber": "string",
+    "city": "string",
+    "postalCode": "string",
+    "country": "string"
+  },
+  "remittanceInformationUnstructured": "string"
+}';
+const headers = {
+  'Content-Type':'application/json',
+  'Accept':'application/json',
+  'X-Request-ID':'string',
+  'Certificate':'string',
+  'ClientId':'string',
+  'pSUIPAddress':'string',
+  'PSU_ID':'string',
+  'consentID':'string',
+  'Ocp-Apim-Subscription-Key':'string'
+};
+
+fetch('/v1/{payment-service}/{payment-product}',
+{
+  method: 'POST',
+  body: inputBody,
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+      ```
+
+
+      ```python {{ title: 'Python' }}
+import requests
+headers = {
+  'Content-Type': 'application/json',
+  'Accept': 'application/json',
+  'X-Request-ID': 'string',
+  'Certificate': 'string',
+  'ClientId': 'string',
+  'pSUIPAddress': 'string',
+  'PSU_ID': 'string',
+  'consentID': 'string',
+  'Ocp-Apim-Subscription-Key': 'string'
+}
+
+r = requests.post('/v1/{payment-service}/{payment-product}', headers = headers)
+
+print(r.json())
+      ```
+
+      ```go
+package main
+
+import (
+  "fmt"
+  "strings"
+  "net/http"
+  "io/ioutil"
+)
+
+func main() {
+
+  url := "//v1/<string>/<string>"
+  method := "POST"
+
+  payload := strings.NewReader(`{
+  "creditorAccount": {
+    "currency": "<string>",
+    "iban": "<string>",
+    "bban": "<string>",
+    "pan": "<string>",
+    "maskedPan": "<string>",
+    "msisdn": "<string>"
+  },
+  "creditorName": "<string>",
+  "instructedAmount": {
+    "Amount": "<string>",
+    "currency": "<string>"
+  },
+  "endToEndIdentification": "<string>",
+  "debtorAccount": {
+    "currency": "<string>",
+    "iban": "<string>",
+    "bban": "<string>",
+    "pan": "<string>",
+    "maskedPan": "<string>",
+    "msisdn": "<string>"
+  },
+  "creditorAgent": "<string>",
+  "creditorAgentName": "<string>",
+  "creditorAddress": {
+    "country": "<string>",
+    "street": "<string>",
+    "buildingNumber": "<string>",
+    "city": "<string>",
+    "postalCode": "<string>"
+  },
+  "remittanceInformationUnstructured": "<string>"
+}`)
+
+  client := &http.Client {
+  }
+  req, err := http.NewRequest(method, url, payload)
+
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  req.Header.Add("X-Request-ID", "<uuid>")
+  req.Header.Add("Certificate", "<string>")
+  req.Header.Add("ClientId", "<string>")
+  req.Header.Add("pSUIPAddress", "<string>")
+  req.Header.Add("PSU_ID", "<string>")
+  req.Header.Add("consentID", "<string>")
+  req.Header.Add("Ocp-Apim-Subscription-Key", "<string>")
+  req.Header.Add("Content-Type", "application/json")
+  req.Header.Add("Accept", "application/json")
+
+  res, err := client.Do(req)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  defer res.Body.Close()
+
+  body, err := ioutil.ReadAll(res.Body)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  fmt.Println(string(body))
+}
+      ```      
+
+     
+    </CodeGroup>
+
+  <Col sticky>
+    <CodeGroup title="Response examples">
+
+    ```json {{ title: '201' }}
+{
+  "transactionStatus": 0,
+  "paymentId": "",
+  "transactionFees": {
+    "currency": "",
+    "Amount": ""
+  },
+  "transactionFeeIndicator": false,
+  "scaMethods": [
+    {
+      "authenticationType": 0,
+      "authenticationVersion": "",
+      "authenticationMethodId": "",
+      "name": "",
+      "explanation": ""
+    }
+  ],
+  "chosenScaMethod": {
+    "authenticationType": 0,
+    "authenticationVersion": "",
+    "authenticationMethodId": "",
+    "name": "",
+    "explanation": ""
+  },
+  "challengeData": {
+    "image": "",
+    "data": [
+      ""
+    ],
+    "imageLink": "",
+    "otpMaxLength": "",
+    "otpFormat": 0,
+    "additionalInformation": ""
+  },
+  "links": "",
+  "psuMessage": "",
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "paymentService": "",
+  "paymentProduct": "",
+  "customerPhone": ""
+}    
+    ```
+
+    ```json {{ title: '400' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '401' }}
+{
+  "statusCode": "",
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '403' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '404' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '405' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '409' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    </CodeGroup> 
+  </Col>   
+
+  </Col>
+</Row>
+
+  ### Responses
+
+<div className="table">  
+
+|Status|Description| 
+|---|---|
+|**201**| <a href="https://tools.ietf.org/html/rfc7231#section-6.3.2" target="_blank">Created</a> |
+|**400**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.1" target="_blank">Bad Request</a> |
+|**401**| <a href="https://tools.ietf.org/html/rfc7235#section-3.1" target="_blank">Unauthorised</a> |
+|**403**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.3" target="_blank">Forbidden</a> | 
+|**404**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.4"  target="_blank">Not Found</a> | 
+|**405**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.5" target="_blank">Method Not Allowed</a> | 
+|**409**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.8" target="_blank">Conflict</a> | 
+
+</div>
+---
+
+## Cancel payment {{ tag: 'DELETE', label: '/v1/{payment-service}/{payment-product}/{paymentId}' }}
+
+<Row>
+  <Col>
+    Cancel a payment transaction. Stop a payment process and handle any necessary follow-up actions.
+
+    <Properties title="Path parameters">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-service</span>} type="string">
+      The payment service that is used to initiate the payment. Available options: **_payments_**.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-product</span>} type="string">
+      The addressed payment product endpoint, e.g., for SEPA Credit Transfers (SCT). Available options: **_internal-transfers_**, **_sepa-credit-transfers_**. 
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>paymentId</span>} type="string">
+      The payment ID of the payment to be cancelled.
+      </Property>
+    </Properties>
+
+    <Properties title="Headers">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>x-Request-ID</span>} type="string(uuid)">
+        ID of the request, unique to the call, as determined by the initiating party.
+      </Property>     
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Certificate</span>} type="string">
+      The certificate used for signature verification (<strong>Certificate</strong> on Devs Portal App).
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>ClientId</span>} type="string">
+      The client ID associated with the request (<strong>Application ID</strong> on Devs Portal App).
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Ocp-Apim-Subscription-Key</span>} type="string">
+        A unique identifier related to the registered merchant in the Snappi API environment, available within the application's details (<strong>Subscription Key</strong> on Devs Portal App).
+      </Property>                                      
+    </Properties>
+
+    <Properties title="Response attributes">
+     <Property name="transactionStatus" type="string">
+        Indicates the status of the transaction after the cancellation request. Available options: `RECEIVED`, `STARTED`, `INITIATED`, `STARTED`, `SUCCESS`, `FAILED`, `CANCELLED`, `PARTIALLY_SUCCESS`, `PARTIALLY_FAILED`, `PARTIALLY_CANCELLED`, `PARTIALLY_RECEIVED`, `PARTIALLY_INITIATED`, `PARTIALLY_STARTED`, `PARTIALLY_COMPLETED`.
+      </Property>    
+     <Property name="scaMethods" type="array">
+        A list of Strong Customer Authentication (SCA) methods available for the user to authenticate the cancellation request. Each method in the list has the following attributes:
+        - `authenticationType`: The type of authentication used, such as SMS OTP, push notification, etc. Available options: **_0_** - **_3_**.
+        - `authenticationVersion`: The version of the authentication method implemented.
+        - `authenticationMethodId`: The ID of the authentication method.
+        - `name`: A human-readable name for the authentication method.
+        - `explanation`: A brief explanation or description of the authentication method.
+      </Property>      
+      <Property name="chosenScaMethod" type="object">
+      The selected Strong Customer Authentication (SCA) method to authenticate the cancellation. It includes:
+      - `authenticationMethodId`: The ID of the authentication method.
+      - `authenticationType`: The type of the authentication method. Available options: (0)`SMS_OTP`, (1)`SMS_OTP_AND_PIN`, (2)`SMS_OTP_AND_PASSWORD`, (3)`SMS_OTP_AND_BIOMETRIC`.
+      - `authenticationVersion`: The version of the authentication method.
+      - `name`: A human-readable name for the authentication method.      
+      - `explanation`: A brief explanation or description of the authentication method.      
+      </Property>     
+      <Property name="challengeData" type="object">
+        Contains data related to the challenge issued by the ASPSP (Account Servicing Payment Service Provider). It includes:
+        - `image`: An image associated with the payment.
+        - `data`: Data related to the payment.         
+        - `imageLink`: A link to an image associated with the payment.
+        - `otpMaxLength`: The maximum length of the OTP for authentication.        
+        - `otpFormat`: The format of the OTP (One-Time Password) used for authentication. Available options: (0)`CHARACTERS`, (1)`INTEGER`.
+        - `additionalInformation`: Extra details or supplementary information about the payment.        
+      </Property>
+      <Property name="links" type="object">
+      A collection of hyperlinks related to the API call. This includes links to related resources or actions that can be taken following the cancellation request.
+      </Property>
+ 
+      <Property name="statusCode" type="integer">
+      The status code of the response. Available options: **_0_**, **_1_**.
+      </Property>
+      <Property name="tppMessages" type="object">
+      The list of messages returned from the ASPSP. It includes:
+      - `category`: The message category of the error. Available options: **_0_**, **_1_**.
+      - `code`: The code of the error. 
+      - `path`: The path associated with the error.
+      - `text`: The text associated with the error.
+      </Property>
+      <Property name="links" type="object">
+      Links associated with the error.
+      </Property>      
+    </Properties>  
+ 
+
+
+  </Col>
+
+  <Col sticky>
+    <CodeGroup title="Request" tag="DELETE" label="/v1/{payment-service}/{payment-product}/{paymentId}">
+      ```bash {{ title: 'cURL' }}
+curl -X DELETE /v1/{payment-service}/{payment-product}/{paymentId} \
+  -H 'Accept: application/json' \
+  -H 'x-Request-ID: string' \
+  -H 'Certificate: string' \
+  -H 'ClientId: string' \
+  -H 'Ocp-Apim-Subscription-Key: string'
+      ```
+
+
+
+      ```csharp
+var client = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Delete, "//v1/<string>/<string>/<string>");
+request.Headers.Add("X-Request-ID", "<uuid>");
+request.Headers.Add("Certificate", "<string>");
+request.Headers.Add("ClientId", "<string>");
+request.Headers.Add("Ocp-Apim-Subscription-Key", "<string>");
+request.Headers.Add("Accept", "application/json");
+var response = await client.SendAsync(request);
+response.EnsureSuccessStatusCode();
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+
+      ```
+
+      ```php {{ title: 'PHP' }}
+<?php
+
+require 'vendor/autoload.php';
+
+$headers = array(
+    'Accept' => 'application/json',
+    'X-Request-ID' => 'string',
+    'Certificate' => 'string',
+    'ClientId' => 'string',
+    'Ocp-Apim-Subscription-Key' => 'string',
+);
+
+$client = new \GuzzleHttp\Client();
+
+// Define array of request body.
+$request_body = array();
+
+try {
+    $response = $client->request('DELETE','/v1/{payment-service}/{payment-product}/{paymentId}', array(
+        'headers' => $headers,
+        'json' => $request_body,
+       )
+    );
+    print_r($response->getBody()->getContents());
+ }
+ catch (\GuzzleHttp\Exception\BadResponseException $e) {
+    // handle exception or api errors.
+    print_r($e->getMessage());
+ }
+
+ // ...
+
+      ```
+
+      ```ruby {{ title: 'Ruby' }}
+require 'rest-client'
+require 'json'
+
+headers = {
+  'Accept' => 'application/json',
+  'X-Request-ID' => 'string',
+  'Certificate' => 'string',
+  'ClientId' => 'string',
+  'Ocp-Apim-Subscription-Key' => 'string'
+}
+
+result = RestClient.delete '/v1/{payment-service}/{payment-product}/{paymentId}',
+  params: {
+  }, headers: headers
+
+p JSON.parse(result)
+      ```
+
+      ```javascript {{ title: 'Javascript' }}
+const headers = {
+  'Accept':'application/json',
+  'X-Request-ID':'string',
+  'Certificate':'string',
+  'ClientId':'string',
+  'Ocp-Apim-Subscription-Key':'string'
+};
+
+fetch('/v1/{payment-service}/{payment-product}/{paymentId}',
+{
+  method: 'DELETE',
+
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+      ```
+
+      ```python {{ title: 'Python' }}
+import requests
+headers = {
+  'Accept': 'application/json',
+  'X-Request-ID': 'string',
+  'Certificate': 'string',
+  'ClientId': 'string',
+  'Ocp-Apim-Subscription-Key': 'string'
+}
+
+r = requests.delete('/v1/{payment-service}/{payment-product}/{paymentId}', headers = headers)
+
+print(r.json())
+      ```
+
+      ```go
+package main
+
+import (
+  "fmt"
+  "net/http"
+  "io/ioutil"
+)
+
+func main() {
+
+  url := "//v1/<string>/<string>/<string>"
+  method := "DELETE"
+
+  client := &http.Client {
+  }
+  req, err := http.NewRequest(method, url, nil)
+
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  req.Header.Add("X-Request-ID", "<uuid>")
+  req.Header.Add("Certificate", "<string>")
+  req.Header.Add("ClientId", "<string>")
+  req.Header.Add("Ocp-Apim-Subscription-Key", "<string>")
+  req.Header.Add("Accept", "application/json")
+
+  res, err := client.Do(req)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  defer res.Body.Close()
+
+  body, err := ioutil.ReadAll(res.Body)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  fmt.Println(string(body))
+}
+      ```      
+
+     
+    </CodeGroup>
+
+  <Col sticky>
+    <CodeGroup title="Response examples">
+
+    ```json {{ title: '202' }}
+{
+  "transactionStatus": 0,
+  "scaMethods": [
+    {
+      "authenticationType": 0,
+      "authenticationVersion": "",
+      "authenticationMethodId": "",
+      "name": "",
+      "explanation": ""
+    }
+  ],
+  "chosenScaMethod": {
+    "authenticationType": 0,
+    "authenticationVersion": "",
+    "authenticationMethodId": "",
+    "name": "",
+    "explanation": ""
+  },
+  "challengeData": {
+    "image": "",
+    "data": [
+      ""
+    ],
+    "imageLink": "",
+    "otpMaxLength": "",
+    "otpFormat": 0,
+    "additionalInformation": ""
+  },
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '400' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '401' }}
+{
+  "statusCode": "",
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '403' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '404' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '405' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '409' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+
+    </CodeGroup> 
+  </Col>   
+
+  </Col>
+</Row>
+
+  ### Responses
+
+<div className="table">  
+
+|Status|Description| 
+|---|---|
+|**202**| <a href="https://tools.ietf.org/html/rfc7231#section-6.3.3" target="_blank">Accepted</a> |
+|**400**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.1" target="_blank">Bad Request</a> |
+|**401**| <a href="https://tools.ietf.org/html/rfc7235#section-3.1" target="_blank">Unauthorised</a> |
+|**403**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.3" target="_blank">Forbidden</a> | 
+|**404**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.4"  target="_blank">Not Found</a> | 
+|**405**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.5" target="_blank">Method Not Allowed</a> | 
+|**409**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.8" target="_blank">Conflict</a> | 
+
+</div>
+
+---
+
+## Fetch payment data {{ tag: 'GET', label: '/v1/{payment-service}/{payment-product}/{paymentId}' }}
+
+<Row>
+  <Col>
+    Retrieve detailed payment information, including creditor and debtor account details, transaction status and remittance information. 
+
+    <Note>
+    Gather essential data related to a specific payment transaction without the need for manual data retrieval or processing.
+    </Note>
+
+
+    <Properties title="Path parameters">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-service</span>} type="string">
+      The payment service that is used to initiate the payment. Available options: **_payments_**.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-product</span>} type="string">
+      The addressed payment product endpoint, e.g., for SEPA Credit Transfers (SCT). The ASPSP will publish which of the payment products/endpoints will be supported. Available options: **_internal-transfers_**, **_sepa-credit-transfers_**.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>paymentId</span>} type="string">
+      The payment ID of the payment to retrieve.
+      </Property>
+    </Properties>
+
+    <Properties title="Headers">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>x-Request-ID</span>} type="string(uuid)">
+        ID of the request, unique to the call, as determined by the initiating party.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Certificate</span>} type="string">
+      The certificate used for signature verification (<strong>Certificate</strong> on Devs Portal App).
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>ClientId</span>} type="string">
+      The client ID associated with the request (<strong>Application ID</strong> on Devs Portal App).
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Ocp-Apim-Subscription-Key</span>} type="string">
+        A unique identifier related to the registered merchant in the Snappi API environment, available within the application's details (<strong>Subscription Key</strong> on Devs Portal App).
+      </Property>                                     
+    </Properties>
+
+    <Properties title="Response attributes">
+      <Property name="endToEndIdentification" type="string">
+        A unique identifier assigned by the initiating party to unambiguously identify the transaction. This identifier will be passed unaltered through the entire chain of the payment.
+      </Property>
+      <Property name="debtorAccount" type="object">
+        An object containing information about the debtor's account. It includes:
+        - `iban`: The International Bank Account Number (IBAN) of the debtor's account.
+        - `bban`: The Basic Bank Account Number (BBAN) of the debtor's account.
+        - `pan`: The Primary Account Number (PAN) of the debtor's account.
+        - `maskedPan`: The masked PAN of the debtor's account.
+        - `msisdn`: The Mobile Station International Subscriber Directory Number (MSISDN) of the debtor's account, which is a number uniquely identifying a subscription in a GSM or a UMTS mobile network.
+        - `currency`: The currency of the account.
+      </Property>
+      <Property name="instructedAmount" type="object">
+        An object specifying the amount of the payment. It includes:
+        - `currency`: The currency of the payment amount.        
+        - `Amount`: The amount of the payment.        
+      </Property>                
+      <Property name="creditorAccount" type="object">
+        An object containing information about the creditor's account. It includes the same fields as the `debtorAccount` object.It includes:
+        - `iban`: The International Bank Account Number (IBAN) of the creditor's account.        
+        - `bban`: The Basic Bank Account Number (BBAN) of the creditor's account.  
+        - `pan`: The Primary Account Number (PAN) of the creditor's account. 
+        - `maskedPan`: The masked PAN of the creditor's account. 
+        - `msisdn`: The Mobile Station International Subscriber Directory Number (MSISDN) of the creditor's account, which is a number uniquely identifying a subscription in a GSM or a UMTS mobile network.
+        - `currency`: The currency of the account.
+      </Property>
+      <Property name="creditorAgent" type="string">
+        The financial institution servicing an account for the creditor.
+      </Property>
+      <Property name="creditorName" type="string">
+      The name of the creditor.
+      </Property>      
+      <Property name="creditorAddress" type="object">
+      An object containing the address of the creditor. It includes:
+      - `street`: The street name in the creditor's address.      
+      - `buildingNumber`: The building number in the creditor's address.
+      - `city`: The city in the creditor's address. 
+      - `postalCode`: The postal code in the creditor's address.       
+      - `country`: The country in the creditor's address.
+      </Property>
+      <Property name="remittanceInformationUnstructured:" type="string">
+        Unstructured remittance information for the creditor to identify the transaction.
+      </Property>
+      <Property name="transactionStatus" type="string">
+        The status of the transaction. Valid options:  `ACCC`, `ACCP`, `ACSC`, `ACSP`, `ACTC`, `ACWC`, `ACWP`, `RCVD`, `PDNG`, `RJCT`, `CANC`, `ACFC`, `PATC`,  `PART`.
+      </Property>   
+      <Property name="tppMessages" type="object">
+      The list of messages returned from the ASPSP. It includes:
+      - `category` (integer): The message category of the error. Available options: **_0_**, **_1_**.
+      - `code` (integer): The code of the error. 
+      - `path` (string): The path associated with the error.
+      - `text` (string): The text associated with the error.
+      </Property>
+      <Property name="statusCode" type="integer">
+      The status code of the response. Available options: **_0_**, **_1_**.
+      </Property>      
+      <Property name="links" type="object">
+      Links associated with the error.
+      </Property>
+
+    </Properties>  
+
+
+  </Col>
+
+  <Col sticky>
+    <CodeGroup title="Request" tag="GET" label="/v1/{payment-service}/{payment-product}/{paymentId}">
+      ```bash {{ title: 'cURL' }}
+curl -X GET /v1/{payment-service}/{payment-product}/{paymentId} \
+  -H 'Accept: application/json' \
+  -H 'x-Request-ID: string' \
+  -H 'Certificate: string' \
+  -H 'ClientId: string' \
+  -H 'Ocp-Apim-Subscription-Key: string'
+      ```
+
+      ```csharp
+var client = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Get, "//v1/<string>/<string>/<string>");
+request.Headers.Add("X-Request-ID", "<uuid>");
+request.Headers.Add("Certificate", "<string>");
+request.Headers.Add("ClientId", "<string>");
+request.Headers.Add("Ocp-Apim-Subscription-Key", "<string>");
+request.Headers.Add("Accept", "application/json");
+var response = await client.SendAsync(request);
+response.EnsureSuccessStatusCode();
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+
+      ```
+
+      ```php {{ title: 'PHP' }}
+<?php
+
+require 'vendor/autoload.php';
+
+$headers = array(
+    'Accept' => 'application/json',
+    'X-Request-ID' => 'string',
+    'Certificate' => 'string',
+    'ClientId' => 'string',
+    'Ocp-Apim-Subscription-Key' => 'string',
+);
+
+$client = new \GuzzleHttp\Client();
+
+// Define array of request body.
+$request_body = array();
+
+try {
+    $response = $client->request('GET','/v1/{payment-service}/{payment-product}/{paymentId}', array(
+        'headers' => $headers,
+        'json' => $request_body,
+       )
+    );
+    print_r($response->getBody()->getContents());
+ }
+ catch (\GuzzleHttp\Exception\BadResponseException $e) {
+    // handle exception or api errors.
+    print_r($e->getMessage());
+ }
+
+ // ...
+      ```
+
+      ```ruby {{ title: 'Ruby' }}
+require 'rest-client'
+require 'json'
+
+headers = {
+  'Accept' => 'application/json',
+  'X-Request-ID' => 'string',
+  'Certificate' => 'string',
+  'ClientId' => 'string',
+  'Ocp-Apim-Subscription-Key' => 'string'
+}
+
+result = RestClient.get '/v1/{payment-service}/{payment-product}/{paymentId}',
+  params: {
+  }, headers: headers
+
+p JSON.parse(result)
+
+      ```
+
+      ```javascript {{ title: 'Javascript' }}
+const headers = {
+  'Accept':'application/json',
+  'X-Request-ID':'string',
+  'Certificate':'string',
+  'ClientId':'string',
+  'Ocp-Apim-Subscription-Key':'string'
+};
+
+fetch('/v1/{payment-service}/{payment-product}/{paymentId}',
+{
+  method: 'GET',
+
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+      ```
+
+
+      ```python {{ title: 'Python' }}
+import requests
+headers = {
+  'Accept': 'application/json',
+  'X-Request-ID': 'string',
+  'Certificate': 'string',
+  'ClientId': 'string',
+  'Ocp-Apim-Subscription-Key': 'string'
+}
+
+r = requests.get('/v1/{payment-service}/{payment-product}/{paymentId}', headers = headers)
+
+print(r.json())
+      ```
+
+      ```go
+package main
+
+import (
+  "fmt"
+  "net/http"
+  "io/ioutil"
+)
+
+func main() {
+
+  url := "//v1/<string>/<string>/<string>"
+  method := "GET"
+
+  client := &http.Client {
+  }
+  req, err := http.NewRequest(method, url, nil)
+
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  req.Header.Add("X-Request-ID", "<uuid>")
+  req.Header.Add("Certificate", "<string>")
+  req.Header.Add("ClientId", "<string>")
+  req.Header.Add("Ocp-Apim-Subscription-Key", "<string>")
+  req.Header.Add("Accept", "application/json")
+
+  res, err := client.Do(req)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  defer res.Body.Close()
+
+  body, err := ioutil.ReadAll(res.Body)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  fmt.Println(string(body))
+}
+      ```      
+
+     
+    </CodeGroup>
+
+  <Col sticky>
+    <CodeGroup title="Response examples">
+
+    ```json {{ title: '200' }}
+{
+  "endToEndIdentification": "",
+  "debtorAccount": {
+    "iban": "",
+    "bban": "",
+    "pan": "",
+    "maskedPan": "",
+    "msisdn": "",
+    "currency": ""
+  },
+  "instructedAmount": {
+    "currency": "",
+    "Amount": ""
+  },
+  "creditorAccount": {
+    "iban": "",
+    "bban": "",
+    "pan": "",
+    "maskedPan": "",
+    "msisdn": "",
+    "currency": ""
+  },
+  "creditorAgent": "",
+  "creditorName": "",
+  "creditorAddress": {
+    "street": "",
+    "buildingNumber": "",
+    "city": "",
+    "postalCode": "",
+    "country": ""
+  },
+  "remittanceInformationUnstructured": "",
+  "transactionStatus": 0
+}
+    ```
+
+    ```json {{ title: '400' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '401' }}
+{
+  "statusCode": "",
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '403' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '404' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '405' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '409' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    </CodeGroup> 
+  </Col>   
+
+  </Col>
+</Row>
+
+  ### Responses
+
+<div className="table">  
+
+|Status|Description| 
+|---|---|
+|**200**| <a href="https://tools.ietf.org/html/rfc7231#section-6.3.1" target="_blank">OK</a> |
+|**400**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.1" target="_blank">Bad Request</a> |
+|**401**| <a href="https://tools.ietf.org/html/rfc7235#section-3.1" target="_blank">Unauthorised</a> |
+|**403**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.3" target="_blank">Forbidden</a> | 
+|**404**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.4"  target="_blank">Not Found</a> | 
+|**405**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.5" target="_blank">Method Not Allowed</a> | 
+|**406**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.6" target="_blank">Not Acceptable</a> | 
+|**409**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.8" target="_blank">Conflict</a> | 
+|**429**| <a href="https://tools.ietf.org/html/rfc6585#section-4" target="_blank">Too Many Requests</a>| 
+
+</div>
+
+---
+
+## Fetch authorisation data {{ tag: 'GET', label: '/v1/{payment-service}/{payment-product}/{paymentId}/authorisations' }}
+
+<Row>
+  <Col>
+    Retrieve authorisation details for a specific payment transaction. 
+    
+    <Note>
+    Obtain necessary authorisation IDs and related information to facilitate seamless payment processing.
+    </Note>
+
+
+    <Properties title="Path parameters">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-service</span>} type="string">
+      The payment service that is used to initiate the payment. Available options: **_payments_**.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-product</span>} type="string">
+      The addressed payment product endpoint, e.g., for SEPA Credit Transfers (SCT). The ASPSP will publish which of the payment products/endpoints will be supported. Available options: **_internal-transfers_**, **_sepa-credit-transfers_**.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>paymentId</span>} type="string">
+      The payment ID of the payment to retrieve.
+      </Property>
+    </Properties>
+
+    <Properties title="Headers">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>x-Request-ID</span>} type="string(uuid)">
+        ID of the request, unique to the call, as determined by the initiating party.
+      </Property>
+      
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Certificate</span>} type="string">
+      The certificate used for signature verification (<strong>Certificate</strong> on Devs Portal App).
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>ClientId</span>} type="string">
+      The client ID associated with the request (<strong>Application ID</strong> on Devs Portal App).
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Ocp-Apim-Subscription-Key</span>} type="string">
+        A unique identifier related to the registered merchant in the Snappi API environment, available within the application's details (<strong>Subscription Key</strong> on Devs Portal App).
+      </Property>                                    
+    </Properties>
+
+    <Properties title="Response attributes">
+      <Property name="authorisationIds" type="array">
+        The authorisation IDs of the related consent, which was performed prior to this payment initiation.
+      </Property>
+      <Property name="statusCode" type="integer">
+      The status code of the payment initiation. Available options: **_0_**, **_1_**.
+      </Property>
+      <Property name="tppMessages" type="object">
+      The list of messages returned from the ASPSP. It includes:
+      - `category` (integer): The message category of the error. Available options: **_0_**, **_1_**.
+      - `code` (integer): The code of the error. 
+      - `path` (string): The path associated with the error.
+      - `text` (string): The text associated with the error.
+      </Property>
+      <Property name="links" type="object">
+      Links associated with the error.
+      </Property>      
+    </Properties>  
+
+
+  </Col>
+
+  <Col sticky>
+    <CodeGroup title="Request" tag="GET" label="/v1/{payment-service}/{payment-product}/{paymentId}/authorisations">
+      ```bash {{ title: 'cURL' }}
+curl -X GET /v1/{payment-service}/{payment-product}/{paymentId}/authorisations \
+  -H 'Accept: application/json' \
+  -H 'X-Request-ID: string' \
+  -H 'Certificate: string' \
+  -H 'ClientId: string' \
+  -H 'Ocp-Apim-Subscription-Key: string'
+      ```
+
+      ```csharp
+var client = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Get, "//v1/<string>/<string>/<string>/authorisations");
+request.Headers.Add("X-Request-ID", "<uuid>");
+request.Headers.Add("Certificate", "<string>");
+request.Headers.Add("ClientId", "<string>");
+request.Headers.Add("Ocp-Apim-Subscription-Key", "<string>");
+request.Headers.Add("Accept", "application/json");
+var response = await client.SendAsync(request);
+response.EnsureSuccessStatusCode();
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+      ```
+
+      ```php {{ title: 'PHP' }}
+<?php
+
+require 'vendor/autoload.php';
+
+$headers = array(
+    'Accept' => 'application/json',
+    'X-Request-ID' => 'string',
+    'Certificate' => 'string',
+    'ClientId' => 'string',
+    'Ocp-Apim-Subscription-Key' => 'string',
+);
+
+$client = new \GuzzleHttp\Client();
+
+// Define array of request body.
+$request_body = array();
+
+try {
+    $response = $client->request('GET','/v1/{payment-service}/{payment-product}/{paymentId}/authorisations', array(
+        'headers' => $headers,
+        'json' => $request_body,
+       )
+    );
+    print_r($response->getBody()->getContents());
+ }
+ catch (\GuzzleHttp\Exception\BadResponseException $e) {
+    // handle exception or api errors.
+    print_r($e->getMessage());
+ }
+
+ // ...
+
+      ```
+
+      ```ruby {{ title: 'Ruby' }}
+require 'rest-client'
+require 'json'
+
+headers = {
+  'Accept' => 'application/json',
+  'X-Request-ID' => 'string',
+  'Certificate' => 'string',
+  'ClientId' => 'string',
+  'Ocp-Apim-Subscription-Key' => 'string'
+}
+
+result = RestClient.get '/v1/{payment-service}/{payment-product}/{paymentId}/authorisations',
+  params: {
+  }, headers: headers
+
+p JSON.parse(result)
+
+      ```
+
+      ```javascript {{ title: 'Javascript' }}
+const headers = {
+  'Accept':'application/json',
+  'X-Request-ID':'string',
+  'Certificate':'string',
+  'ClientId':'string',
+  'Ocp-Apim-Subscription-Key':'string'
+};
+
+fetch('/v1/{payment-service}/{payment-product}/{paymentId}/authorisations',
+{
+  method: 'GET',
+
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+      ```
+
+
+      ```python {{ title: 'Python' }}
+import requests
+headers = {
+  'Accept': 'application/json',
+  'X-Request-ID': '497f6eca-6276-4993-bfeb-53cbbbba6f08',
+  'Certificate': 'string',
+  'ClientId': 'string',
+  'Ocp-Apim-Subscription-Key': 'string'
+}
+
+r = requests.get('/v1/{payment-service}/{payment-product}/{paymentId}/authorisations', headers = headers)
+
+print(r.json())
+      ```
+
+      ```go
+package main
+
+import (
+  "fmt"
+  "net/http"
+  "io/ioutil"
+)
+
+func main() {
+
+  url := "//v1/<string>/<string>/<string>/authorisations"
+  method := "GET"
+
+  client := &http.Client {
+  }
+  req, err := http.NewRequest(method, url, nil)
+
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  req.Header.Add("X-Request-ID", "<uuid>")
+  req.Header.Add("Certificate", "<string>")
+  req.Header.Add("ClientId", "<string>")
+  req.Header.Add("Ocp-Apim-Subscription-Key", "<string>")
+  req.Header.Add("Accept", "application/json")
+
+  res, err := client.Do(req)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  defer res.Body.Close()
+
+  body, err := ioutil.ReadAll(res.Body)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  fmt.Println(string(body))
+}
+      ```      
+
+     
+    </CodeGroup>
+
+  <Col sticky>
+    <CodeGroup title="Response examples">
+
+    ```json {{ title: '200' }}
+{
+  "authorisationIds": [
+    ""
+  ]
+}
+    ```
+
+    ```json {{ title: '400' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '401' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '403' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '404' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '405' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '409' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+
+
+    </CodeGroup> 
+  </Col>   
+
+  </Col>
+</Row>
+
+  ### Responses
+
+<div className="table">  
+
+|Status|Description| 
+|---|---|
+|**200**| <a href="https://tools.ietf.org/html/rfc7231#section-6.3.1" target="_blank">OK</a> |
+|**400**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.1" target="_blank">Bad Request</a> |
+|**401**| <a href="https://tools.ietf.org/html/rfc7235#section-3.1" target="_blank">Unauthorised</a> |
+|**403**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.3" target="_blank">Forbidden</a> | 
+|**404**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.4"  target="_blank">Not Found</a> | 
+|**405**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.5" target="_blank">Method Not Allowed</a> | 
+|**409**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.8" target="_blank">Conflict</a> | 
+
+</div>
+
+---
+
+## Start payment authorisation {{ tag: 'POST', label: '/v1/{payment-service}/{payment-product}/{paymentId}/authorisations' }}
+
+<Row>
+  <Col>
+    Initiate the authorisation process for a payment transaction. 
+    
+    <Note>
+    Trigger the authorisation flow, receive authentication methods and select a preferred authentication method for completing the transaction.
+    </Note>
+
+
+    <Properties title="Path parameters">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-service</span>} type="string">
+      The payment service that is used to initiate the payment. Available options: **_payments_**.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-product</span>} type="string">
+      The addressed payment product endpoint, e.g., for SEPA Credit Transfers (SCT). The ASPSP will publish which of the payment products/endpoints will be supported. Available options: **_internal-transfers_**, **_sepa-credit-transfers_**.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>paymentId</span>} type="string">
+      The payment ID of the payment to retrieve.
+      </Property>
+    </Properties>
+
+    <Properties title="Headers">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>x-Request-ID</span>} type="string(uuid)">
+        ID of the request, unique to the call, as determined by the initiating party.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Certificate</span>} type="string">
+      The certificate used for signature verification (<strong>Certificate</strong> on Devs Portal App).
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>ClientId</span>} type="string">
+      The client ID associated with the request (<strong>Application ID</strong> on Devs Portal App).
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Ocp-Apim-Subscription-Key</span>} type="string">
+        A unique identifier related to the registered merchant in the Snappi API environment, available within the application's details (<strong>Subscription Key</strong> on Devs Portal App).
+      </Property>                                      
+    </Properties>
+
+    <Properties title="Response attributes">
+      <Property name="scaStatus" type="string">
+      The status of the Strong Customer Authentication (SCA) process. Available options: **_received_** | **_psuIdentified_** | **_psuAuthenticated_** | **_scaMethodSelected_** | **_started_** | **_finalised_** | **_failed_** | **_exempted_** | **_psuInError_** | **_psuKnows_** | **_scaMethodConfirmed_** | **_psuAuthenticationFailed_** | **_psuAuthenticationCancelled_** | **_psuAuthenticationTimeout_** | **_psuAuthorisation.** | **_psuAuthorisationCancelled_** | **_psuAuthorisationTimeout_** | **_psuAuthorisationFailed_** | **_psuAccountDisabled_** | **_psuAccountBlocked_** | **_psuInMaintenance_** | **_psuProductNotSupported_** | **_psuInvalidPaymentProduct_** | **_psuInvalidPaymentId_** | **_psuPaymentCancellationFailed_** | **_psuPaymentCancellationTimeout_** | **_psuPaymentCancellationNotSupported_** | **_psuPaymentCancellationInvalid_** | **_psuPaymentCancellationUnknown_** | **_psuPaymentCancellation_**
+      </Property>    
+      <Property name="authorisationId" type="string">
+      The ID of the authorisation process.
+      </Property>
+     <Property name="scaMethods" type="object">
+      The list of SCA methods, including:
+      - `authenticationType` (string): The authentication type of the SCA method.
+      - `authenticationVersion` (string): The authentication version of the SCA method.
+      - `authenticationMethodId` (boolean): The authentication method ID of the SCA method.
+      - `name` (string): The name of the SCA method.
+      - `explanation` (string): The description of the SCA method.
+      </Property>
+      <Property name="chosenScaMethod" type="object">
+      The chosen SCA method, including:
+      - `authenticationType` (string): The authentication type of the SCA method.
+      - `authenticationVersion` (string): The authentication version of the SCA method.
+      - `authenticationMethodId` (boolean): The authentication method ID of the SCA method.
+      - `name` (string): The name of the SCA method.
+      - `explanation` (string): The description of the SCA method.
+      </Property>      
+      <Property name="challengeData" type="object">
+      The challenge data, including:
+      - `image` (string): The image of the challenge.
+      - `data` (array): The data of the challenge.
+      - `imageLink` (string): The link of the challenge.
+      - `otpMaxLength` (string): The maximum length of the challenge.
+      - `otpFormat` (string): The format of the challenge.
+      - `additionalInformation` (string): The additional information of the challenge.
+      </Property>
+      <Property name="links" type="string">
+      Links associated with the payment initiation.
+      </Property>
+      <Property name="psuMessage" type="string">
+      The message for the PSU.
+      </Property>
+      <Property name="statusCode" type="integer">
+      The status code of the payment initiation. Available options: **_0_**, **_1_**.
+      </Property>
+      <Property name="tppMessages" type="object">
+      The list of messages returned from the ASPSP. It includes:
+      - `category` (integer): The message category of the error. Available options: **_0_**, **_1_**.
+      - `code` (integer): The code of the error. 
+      - `path` (string): The path associated with the error.
+      - `text` (string): The text associated with the error.
+      </Property>
+      <Property name="links" type="object">
+      Links associated with the error.
+      </Property>      
+    </Properties>  
+
+
+  </Col>
+
+  <Col sticky>
+    <CodeGroup title="Request" tag="POST" label="/v1/{payment-service}/{payment-product}/{paymentId}/authorisations">
+      ```bash {{ title: 'cURL' }}
+curl -X POST /v1/{payment-service}/{payment-product}/{paymentId}/authorisations \
+  -H 'Accept: application/json' \
+  -H 'X-Request-ID: string' \
+  -H 'Certificate: string' \
+  -H 'ClientId: string' \
+  -H 'Ocp-Apim-Subscription-Key: string'
+      ```
+
+      ```csharp
+var client = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Post, "//v1/<string>/<string>/<string>/authorisations");
+request.Headers.Add("X-Request-ID", "<uuid>");
+request.Headers.Add("Certificate", "<string>");
+request.Headers.Add("ClientId", "<string>");
+request.Headers.Add("Ocp-Apim-Subscription-Key", "<string>");
+request.Headers.Add("Accept", "application/json");
+var response = await client.SendAsync(request);
+response.EnsureSuccessStatusCode();
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+
+      ```
+
+      ```php {{ title: 'PHP' }}
+<?php
+
+require 'vendor/autoload.php';
+
+$headers = array(
+    'Accept' => 'application/json',
+    'X-Request-ID' => '497f6eca-6276-4993-bfeb-53cbbbba6f08',
+    'Certificate' => 'string',
+    'ClientId' => 'string',
+    'Ocp-Apim-Subscription-Key' => 'string',
+);
+
+$client = new \GuzzleHttp\Client();
+
+// Define array of request body.
+$request_body = array();
+
+try {
+    $response = $client->request('POST','/v1/{payment-service}/{payment-product}/{paymentId}/authorisations', array(
+        'headers' => $headers,
+        'json' => $request_body,
+       )
+    );
+    print_r($response->getBody()->getContents());
+ }
+ catch (\GuzzleHttp\Exception\BadResponseException $e) {
+    // handle exception or api errors.
+    print_r($e->getMessage());
+ }
+
+ // ...
+      ```
+
+      ```ruby {{ title: 'Ruby' }}
+require 'rest-client'
+require 'json'
+
+headers = {
+  'Accept' => 'application/json',
+  'X-Request-ID' => 'string',
+  'Certificate' => 'string',
+  'ClientId' => 'string',
+  'Ocp-Apim-Subscription-Key' => 'string'
+}
+
+result = RestClient.post '/v1/{payment-service}/{payment-product}/{paymentId}/authorisations',
+  params: {
+  }, headers: headers
+
+p JSON.parse(result)
+      ```
+
+      ```javascript {{ title: 'Javascript' }}
+const headers = {
+  'Accept':'application/json',
+  'X-Request-ID':'string',
+  'Certificate':'string',
+  'ClientId':'string',
+  'Ocp-Apim-Subscription-Key':'string'
+};
+
+fetch('/v1/{payment-service}/{payment-product}/{paymentId}/authorisations',
+{
+  method: 'POST',
+
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+
+      ```
+
+
+      ```python {{ title: 'Python' }}
+import requests
+headers = {
+  'Accept': 'application/json',
+  'X-Request-ID': 'string',
+  'Certificate': 'string',
+  'ClientId': 'string',
+  'Ocp-Apim-Subscription-Key': 'string'
+}
+
+r = requests.post('/v1/{payment-service}/{payment-product}/{paymentId}/authorisations', headers = headers)
+
+print(r.json())
+      ```
+
+      ```go
+package main
+
+import (
+  "fmt"
+  "net/http"
+  "io/ioutil"
+)
+
+func main() {
+
+  url := "//v1/<string>/<string>/<string>/authorisations"
+  method := "POST"
+
+  client := &http.Client {
+  }
+  req, err := http.NewRequest(method, url, nil)
+
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  req.Header.Add("X-Request-ID", "<uuid>")
+  req.Header.Add("Certificate", "<string>")
+  req.Header.Add("ClientId", "<string>")
+  req.Header.Add("Ocp-Apim-Subscription-Key", "<string>")
+  req.Header.Add("Accept", "application/json")
+
+  res, err := client.Do(req)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  defer res.Body.Close()
+
+  body, err := ioutil.ReadAll(res.Body)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  fmt.Println(string(body))
+}
+      ```      
+
+     
+    </CodeGroup>
+
+  <Col sticky>
+    <CodeGroup title="Response examples">
+
+    ```json {{ title: '201' }}
+{
+  "scaStatus": "",
+  "authorisationId": "",
+  "scaMethods": [
+    {
+      "authenticationType": 0,
+      "authenticationVersion": "",
+      "authenticationMethodId": "",
+      "name": "",
+      "explanation": ""
+    }
+  ],
+  "chosenScaMethod": {
+    "authenticationType": 0,
+    "authenticationVersion": "",
+    "authenticationMethodId": "",
+    "name": "",
+    "explanation": ""
+  },
+  "challengeData": {
+    "image": "",
+    "data": [
+      ""
+    ],
+    "imageLink": "",
+    "otpMaxLength": "",
+    "otpFormat": 0,
+    "additionalInformation": ""
+  },
+  "links": "",
+  "psuMessage": ""
+}
+    ```
+
+    ```json {{ title: '400' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '401' }}
+{
+  "statusCode": "",
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '403' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '404' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '405' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '409' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+
+    </CodeGroup> 
+  </Col>   
+
+  </Col>
+</Row>
+
+  ### Responses
+
+<div className="table">  
+
+|Status|Description| 
+|---|---|
+|**200**| <a href="https://tools.ietf.org/html/rfc7231#section-6.3.1" target="_blank">OK</a> |
+|**400**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.1" target="_blank">Bad Request</a> |
+|**401**| <a href="https://tools.ietf.org/html/rfc7235#section-3.1" target="_blank">Unauthorised</a> |
+|**403**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.3" target="_blank">Forbidden</a> | 
+|**404**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.4"  target="_blank">Not Found</a> | 
+|**405**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.5" target="_blank">Method Not Allowed</a> | 
+|**409**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.8" target="_blank">Conflict</a> | 
+
+</div>
+
+---
+
+## Check security status {{ tag: 'GET', label: '/v1/{payment-service}/{payment-product}/{paymentId}/authorisations/{authorisationId}' }}
+
+<Row>
+  <Col>
+    Retrieve the Strong Customer Authentication status of a specific payment authorisation. 
+    
+    <Note>
+    Check the current status of the authorisation process and take appropriate actions based on the returned status information.
+    </Note>
+
+
+    <Properties title="Path parameters">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-service</span>} type="string">
+      The payment service that is used to initiate the payment. Available options: **_payments_**.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-product</span>} type="string">
+      The addressed payment product endpoint, e.g., for SEPA Credit Transfers (SCT). The ASPSP will publish which of the payment products/endpoints will be supported. Available options: **_internal-transfers_**, **_sepa-credit-transfers_**.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>paymentId</span>} type="string">
+      The payment ID of the payment to retrieve.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>authorisationId</span>} type="string">
+      The authorisation ID of the authorisation to retrieve.
+      </Property>
+    </Properties>
+
+    <Properties title="Headers">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>x-Request-ID</span>} type="string(uuid)">
+        ID of the request, unique to the call, as determined by the initiating party.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Certificate</span>} type="string">
+      The certificate used for signature verification (<strong>Certificate</strong> on Devs Portal App).
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>ClientId</span>} type="string">
+      The client ID associated with the request (<strong>Application ID</strong> on Devs Portal App).
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Ocp-Apim-Subscription-Key</span>} type="string">
+        A unique identifier related to the registered merchant in the Snappi API environment, available within the application's details (<strong>Subscription Key</strong> on Devs Portal App).
+      </Property>                                    
+    </Properties>
+
+    <Properties title="Response attributes">
+      <Property name="scaStatus" type="integer">
+      The status of the SCA performed by the ASPSP. Available options: **_0_** - **_7_**.
+      </Property>
+      <Property name="statusCode" type="integer">
+      The status code of the payment initiation. Available options: **_0_**, **_1_**.
+      </Property>
+      <Property name="tppMessages" type="object">
+      The list of messages returned from the ASPSP. It includes:
+      - `category` (integer): The message category of the error. Available options: **_0_**, **_1_**.
+      - `code` (integer): The code of the error. 
+      - `path` (string): The path associated with the error.
+      - `text` (string): The text associated with the error.
+      </Property>
+      <Property name="links" type="object">
+      Links associated with the error.
+      </Property>      
+    </Properties>  
+
+
+  </Col>
+
+  <Col sticky>
+    <CodeGroup title="Request" tag="GET" label="/v1/{payment-service}/{payment-product}/{paymentId}/authorisations/{authorisationId}">
+      ```bash {{ title: 'cURL' }}
+curl -X GET /v1/{payment-service}/{payment-product}/{paymentId}/authorisations/{authorisationId} \
+  -H 'Accept: application/json' \
+  -H 'X-Request-ID: string' \
+  -H 'Certificate: string' \
+  -H 'ClientId: string' \
+  -H 'Ocp-Apim-Subscription-Key: string'
+      ```
+
+      ```csharp
+var client = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Get, "//v1/<string>/<string>/<string>/authorisations/<string>");
+request.Headers.Add("X-Request-ID", "<uuid>");
+request.Headers.Add("Certificate", "<string>");
+request.Headers.Add("ClientId", "<string>");
+request.Headers.Add("Ocp-Apim-Subscription-Key", "<string>");
+request.Headers.Add("Accept", "application/json");
+var response = await client.SendAsync(request);
+response.EnsureSuccessStatusCode();
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+      ```
+
+      ```php {{ title: 'PHP' }}
+<?php
+
+require 'vendor/autoload.php';
+
+$headers = array(
+    'Accept' => 'application/json',
+    'X-Request-ID' => 'string',
+    'Certificate' => 'string',
+    'ClientId' => 'string',
+    'Ocp-Apim-Subscription-Key' => 'string',
+);
+
+$client = new \GuzzleHttp\Client();
+
+// Define array of request body.
+$request_body = array();
+
+try {
+    $response = $client->request('GET','/v1/{payment-service}/{payment-product}/{paymentId}/authorisations/{authorisationId}', array(
+        'headers' => $headers,
+        'json' => $request_body,
+       )
+    );
+    print_r($response->getBody()->getContents());
+ }
+ catch (\GuzzleHttp\Exception\BadResponseException $e) {
+    // handle exception or api errors.
+    print_r($e->getMessage());
+ }
+
+ // ...
+      ```
+
+      ```ruby {{ title: 'Ruby' }}
+require 'rest-client'
+require 'json'
+
+headers = {
+  'Accept' => 'application/json',
+  'X-Request-ID' => 'string',
+  'Certificate' => 'string',
+  'ClientId' => 'string',
+  'Ocp-Apim-Subscription-Key' => 'string'
+}
+
+result = RestClient.get '/v1/{payment-service}/{payment-product}/{paymentId}/authorisations/{authorisationId}',
+  params: {
+  }, headers: headers
+
+p JSON.parse(result)
+
+      ```
+
+      ```javascript {{ title: 'Javascript' }}
+const headers = {
+  'Accept':'application/json',
+  'X-Request-ID':'string',
+  'Certificate':'string',
+  'ClientId':'string',
+  'Ocp-Apim-Subscription-Key':'string'
+};
+
+fetch('/v1/{payment-service}/{payment-product}/{paymentId}/authorisations/{authorisationId}',
+{
+  method: 'GET',
+
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+      ```
+
+
+      ```python {{ title: 'Python' }}
+import requests
+headers = {
+  'Accept': 'application/json',
+  'X-Request-ID': 'string',
+  'Certificate': 'string',
+  'ClientId': 'string',
+  'Ocp-Apim-Subscription-Key': 'string'
+}
+
+r = requests.get('/v1/{payment-service}/{payment-product}/{paymentId}/authorisations/{authorisationId}', headers = headers)
+
+print(r.json())
+
+      ```
+
+      ```go
+package main
+
+import (
+  "fmt"
+  "net/http"
+  "io/ioutil"
+)
+
+func main() {
+
+  url := "//v1/<string>/<string>/<string>/authorisations/<string>"
+  method := "GET"
+
+  client := &http.Client {
+  }
+  req, err := http.NewRequest(method, url, nil)
+
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  req.Header.Add("X-Request-ID", "<uuid>")
+  req.Header.Add("Certificate", "<string>")
+  req.Header.Add("ClientId", "<string>")
+  req.Header.Add("Ocp-Apim-Subscription-Key", "<string>")
+  req.Header.Add("Accept", "application/json")
+
+  res, err := client.Do(req)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  defer res.Body.Close()
+
+  body, err := ioutil.ReadAll(res.Body)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  fmt.Println(string(body))
+}
+      ```      
+
+     
+    </CodeGroup>
+
+  <Col sticky>
+    <CodeGroup title="Response examples">
+
+    ```json {{ title: '200' }}
+{
+  "scaStatus": 0
+}
+    ```
+
+    ```json {{ title: '400' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '401' }}
+{
+  "statusCode": "",
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '403' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '404' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '405' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '409' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}    
+    ```
+
+    </CodeGroup> 
+  </Col>   
+
+  </Col>
+</Row>
+
+  ### Responses
+
+<div className="table">  
+
+|Status|Description| 
+|---|---|
+|**200**| <a href="https://tools.ietf.org/html/rfc7231#section-6.3.1" target="_blank">OK</a> |
+|**400**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.1" target="_blank">Bad Request</a> |
+|**401**| <a href="https://tools.ietf.org/html/rfc7235#section-3.1" target="_blank">Unauthorised</a> |
+|**403**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.3" target="_blank">Forbidden</a> | 
+|**404**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.4"  target="_blank">Not Found</a> | 
+|**405**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.5" target="_blank">Method Not Allowed</a> | 
+|**409**| <a href="https://tools.ietf.org/html/rfc7231#section-6.5.8" target="_blank">Conflict</a> | 
+
+</div>
+
+---
+
+{/*
+## Get cancellation authorisation {{ tag: 'GET', label: '/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations' }}
+
+<Row>
+  <Col>
+    Retrieve information related to payment initiation cancellation authorisation for a specific payment transaction. 
+    
+    <Note>
+    Access details such as authorization status and any associated messages or error codes.
+    </Note>
+
+
+
+    <Properties title="Path parameters">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-service</span>} type="string">
+      The payment service that is used to initiate the payment. Available options: **_payments_**, **_bulk-payments_**, **_periodic-payments_**.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-product</span>} type="string">
+      The addressed payment product endpoint, e.g., for SEPA Credit Transfers (SCT). The ASPSP will publish which of the payment products/endpoints will be supported. Available options: **_internal-transfers_**, **_sepa-credit-transfers_**.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>paymentId</span>} type="string">
+      The payment ID of the payment to retrieve.
+      </Property>
+    </Properties>
+
+    <Properties title="Headers">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>x-Request-ID</span>} type="string(uuid)">
+        ID of the request, unique to the call, as determined by the initiating party.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Ocp-Apim-Subscription-Key</span>} type="string">
+        A unique identifier related to the registered merchant in the snappi API environment, available within the application's details.
+      </Property>      
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Certificate</span>} type="string">
+      The certificate of the TPP.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>ClientId</span>} type="string">
+      The ID of the TPP.
+      </Property>                              
+    </Properties>
+
+    <Properties title="Response attributes">
+      <Property name="statusCode" type="integer">
+      The status code of the payment initiation. Available options: **_0_**, **_1_**.
+      </Property>
+      <Property name="tppMessages" type="object">
+      The list of messages returned from the ASPSP. It includes:
+      - `category` (integer): The message category of the error. Available options: **_0_**, **_1_**.
+      - `code` (integer): The code of the error. 
+      - `path` (string): The path associated with the error.
+      - `text` (string): The text associated with the error.
+      </Property>
+      <Property name="links" type="object">
+      Links associated with the error.
+      </Property>      
+    </Properties>  
+
+
+  </Col>
+
+  <Col sticky>
+    <CodeGroup title="Request" tag="GET" label="/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations">
+      ```bash {{ title: 'cURL' }}
+curl -X GET /v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations \
+  -H 'Accept: application/json' \
+  -H 'X-Request-ID: string' \
+  -H 'Certificate: string' \
+  -H 'ClientId: string' 
+      ```
+
+      ```csharp
+var client = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Get, "//v1/<string>/<string>/<string>/cancellation-authorisations");
+request.Headers.Add("X-Request-ID", "<uuid>");
+request.Headers.Add("Certificate", "<string>");
+request.Headers.Add("ClientId", "<string>");
+request.Headers.Add("Accept", "application/json");
+var response = await client.SendAsync(request);
+response.EnsureSuccessStatusCode();
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+      ```
+
+      ```php {{ title: 'PHP' }}
+<?php
+
+require 'vendor/autoload.php';
+
+$headers = array(
+    'Accept' => 'application/json',
+    'X-Request-ID' => 'string',
+    'Certificate' => 'string',
+    'ClientId' => 'string',
+);
+
+$client = new \GuzzleHttp\Client();
+
+// Define array of request body.
+$request_body = array();
+
+try {
+    $response = $client->request('GET','/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations', array(
+        'headers' => $headers,
+        'json' => $request_body,
+       )
+    );
+    print_r($response->getBody()->getContents());
+ }
+ catch (\GuzzleHttp\Exception\BadResponseException $e) {
+    // handle exception or api errors.
+    print_r($e->getMessage());
+ }
+
+ // ...
+
+      ```
+
+      ```javascript {{ title: 'Javascript' }}
+const headers = {
+  'Accept':'application/json',
+  'X-Request-ID':'string',
+  'Certificate':'string',
+  'ClientId':'string'
+};
+
+fetch('/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations',
+{
+  method: 'GET',
+
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+      ```
+
+
+      ```python {{ title: 'Python' }}
+import requests
+headers = {
+  'Accept': 'application/json',
+  'X-Request-ID': 'string',
+  'Certificate': 'string',
+  'ClientId': 'string'
+}
+
+r = requests.get('/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations', headers = headers)
+
+print(r.json())
+
+      ```
+
+      ```go
+package main
+
+import (
+  "fmt"
+  "net/http"
+  "io/ioutil"
+)
+
+func main() {
+
+  url := "//v1/<string>/<string>/<string>/cancellation-authorisations"
+  method := "GET"
+
+  client := &http.Client {
+  }
+  req, err := http.NewRequest(method, url, nil)
+
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  req.Header.Add("X-Request-ID", "<uuid>")
+  req.Header.Add("Certificate", "<string>")
+  req.Header.Add("ClientId", "<string>")
+  req.Header.Add("Accept", "application/json")
+
+  res, err := client.Do(req)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  defer res.Body.Close()
+
+  body, err := ioutil.ReadAll(res.Body)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  fmt.Println(string(body))
+}      
+      ```      
+
+     
+    </CodeGroup>
+
+  <Col sticky>
+    <CodeGroup title="Response examples">
+
+    ```json {{ title: '200' }}
+[
+  "string"
+]
+    ```
+
+    ```json {{ title: '4xx' }}
+{
+  "links": {},
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ]
+}
+    ```
+
+    ```json {{ title: '401' }}
+{
+  "links": {},
+  "statusCode": "",
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ]
+}
+    ```
+
+
+    </CodeGroup> 
+  </Col>   
+
+  </Col>
+</Row>
+
+  ### Responses
+
+|Status|Description|
+|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|
+|405|[Method Not Allowed](https://tools.ietf.org/html/rfc7231#section-6.5.5)|
+|409|[Conflict](https://tools.ietf.org/html/rfc7231#section-6.5.8)|
+
+---
+
+## Start cancellation approval {{ tag: 'POST', label: '/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations' }}
+
+<Row>
+  <Col>
+    Initiate the cancellation authorisation process for a specific payment. 
+    
+    <Note>
+    Manage the status of Strong Customer Authentication (SCA), select authentication methods and handle any challenges that may arise during the cancellation authorisation flow.
+    </Note>
+
+    <Properties title="Path parameters">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-service</span>} type="string">
+      The payment service that is used to initiate the payment. Available options: **_payments_**.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-product</span>} type="string">
+      The addressed payment product endpoint, e.g., for SEPA Credit Transfers (SCT). The ASPSP will publish which of the payment products/endpoints will be supported. Available options: **_internal-transfers_**, **_sepa-credit-transfers_**.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>paymentId</span>} type="string">
+      The payment ID of the payment to retrieve. 
+      </Property>
+    </Properties>
+
+    <Properties title="Headers">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>x-Request-ID</span>} type="string(uuid)">
+        ID of the request, unique to the call, as determined by the initiating party.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Ocp-Apim-Subscription-Key</span>} type="string">
+        A unique identifier related to the registered merchant in the snappi API environment, available within the application's details.
+      </Property>      
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Certificate</span>} type="string">
+      The certificate of the TPP.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>ClientId</span>} type="string">
+      The ID of the TPP.
+      </Property>                              
+    </Properties>
+
+    <Properties title="Response attributes">
+      <Property name="authorisationId" type="string">
+      The ID of the authorisation response.
+      </Property>
+      <Property name="challengeData" type="object">
+      The challenge data, including:
+      - `additionalInformation` (string): The additional information of the challenge. 
+      - `data` (array): The data of the challenge.           
+      - `image` (string): The image of the challenge.
+      - `imageLink` (string): The link of the challenge.
+      - `otpFormat` (string): The format of the challenge.      
+      - `otpMaxLength` (string): The maximum length of the challenge.
+      </Property>
+    <Property name="chosenScaMethod" type="object">
+      The chosen SCA method, including:
+      - `authenticationMethodId` (boolean): The authentication method ID of the SCA method.      
+      - `authenticationType` (string): The authentication type of the SCA method.
+      - `authenticationVersion` (string): The authentication version of the SCA method.
+      - `explanation` (string): The description of the SCA method.
+      - `name` (string): The name of the SCA method.
+      </Property>
+      <Property name="links" type="string">
+      Links associated with the payment initiation.
+      </Property>      
+      <Property name="psuMessage" type="string">
+      The message of the PSU.
+      </Property>                      
+      <Property name="scaMethods" type="object">
+      The list of SCA methods available for the payment initiation cancellation authorization, including:
+      - `authenticationMethodId` (boolean): The authentication method ID of the SCA method.      
+      - `authenticationType` (string): The authentication type of the SCA method.
+      - `authenticationVersion` (string): The authentication version of the SCA method.
+      - `explanation` (string): The description of the SCA method. 
+      - `name` (string): The name of the SCA method.
+      </Property>
+      <Property name="scaStatus" type="string">
+      The Strong Customer Authentication (SCA) status. Available options: **_received_**, **_psuIdentified_**, **_psuAuthenticated_**, **_scaMethodSelected_**, **_started_**, **_finalised_**, **_failed_**.
+      </Property>      
+      <Property name="statusCode" type="integer">
+      The status code of the payment initiation. Available options: **_0_**, **_1_**.
+      </Property>
+      <Property name="tppMessages" type="object">
+      The list of messages returned from the ASPSP. It includes:
+      - `category` (integer): The message category of the error. Available options: **_0_**, **_1_**.
+      - `code` (integer): The code of the error. 
+      - `path` (string): The path associated with the error.
+      - `text` (string): The text associated with the error.
+      </Property>
+      <Property name="links" type="object">
+      Links associated with the error.
+      </Property>
+
+    </Properties>  
+
+
+  </Col>
+
+  <Col sticky>
+    <CodeGroup title="Request" tag="POST" label="/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations">
+      ```bash {{ title: 'cURL' }}
+curl -X POST /v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations \
+  -H 'Accept: application/json' \
+  -H 'X-Request-ID: string' \
+  -H 'Certificate: string' \
+  -H 'ClientId: string' 
+      ```
+
+      ```csharp
+var client = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Post, "//v1/<string>/<string>/<string>/cancellation-authorisations");
+request.Headers.Add("X-Request-ID", "<uuid>");
+request.Headers.Add("Certificate", "<string>");
+request.Headers.Add("ClientId", "<string>");
+request.Headers.Add("Accept", "application/json");
+var response = await client.SendAsync(request);
+response.EnsureSuccessStatusCode();
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+
+      ```
+
+      ```php {{ title: 'PHP' }}
+<?php
+
+require 'vendor/autoload.php';
+
+$headers = array(
+    'Accept' => 'application/json',
+    'X-Request-ID' => 'string',
+    'Certificate' => 'string',
+    'ClientId' => 'string',
+);
+
+$client = new \GuzzleHttp\Client();
+
+// Define array of request body.
+$request_body = array();
+
+try {
+    $response = $client->request('POST','/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations', array(
+        'headers' => $headers,
+        'json' => $request_body,
+       )
+    );
+    print_r($response->getBody()->getContents());
+ }
+ catch (\GuzzleHttp\Exception\BadResponseException $e) {
+    // handle exception or api errors.
+    print_r($e->getMessage());
+ }
+
+ // ...
+
+      ```
+
+      ```ruby {{ title: 'Ruby' }}
+require 'rest-client'
+require 'json'
+
+headers = {
+  'Accept' => 'application/json',
+  'X-Request-ID' => 'string',
+  'Certificate' => 'string',
+  'ClientId' => 'string'
+}
+
+result = RestClient.post '/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations',
+  params: {
+  }, headers: headers
+
+p JSON.parse(result)
+
+      ```
+
+      ```javascript {{ title: 'Javascript' }}
+const headers = {
+  'Accept':'application/json',
+  'X-Request-ID':'string',
+  'Certificate':'string',
+  'ClientId':'string'
+};
+
+fetch('/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations',
+{
+  method: 'POST',
+
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+      ```
+
+
+      ```python {{ title: 'Python' }}
+import requests
+headers = {
+  'Accept': 'application/json',
+  'X-Request-ID': 'string',
+  'Certificate': 'string',
+  'ClientId': 'string'
+}
+
+r = requests.post('/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations', headers = headers)
+
+print(r.json())
+      ```
+
+      ```go
+package main
+
+import (
+  "fmt"
+  "net/http"
+  "io/ioutil"
+)
+
+func main() {
+
+  url := "//v1/<string>/<string>/<string>/cancellation-authorisations"
+  method := "POST"
+
+  client := &http.Client {
+  }
+  req, err := http.NewRequest(method, url, nil)
+
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  req.Header.Add("X-Request-ID", "<uuid>")
+  req.Header.Add("Certificate", "<string>")
+  req.Header.Add("ClientId", "<string>")
+  req.Header.Add("Accept", "application/json")
+
+  res, err := client.Do(req)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  defer res.Body.Close()
+
+  body, err := ioutil.ReadAll(res.Body)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  fmt.Println(string(body))
+}
+      ```      
+
+     
+    </CodeGroup>
+
+  <Col sticky>
+    <CodeGroup title="Response examples">
+
+    ```json {{ title: '201' }}
+{
+  "authorisationId": "",
+  "challengeData": {
+    "additionalInformation": "",
+    "data": [
+      ""
+    ],
+    "image": "",
+    "imageLink": "",
+    "otpFormat": 0,
+    "otpMaxLength": ""
+  },
+  "chosenScaMethod": {
+    "authenticationMethodId": "",
+    "authenticationType": 0,
+    "authenticationVersion": "",
+    "explanation": "",
+    "name": ""
+  },
+  "links": {},
+  "psuMessage": "",
+  "scaMethods": [
+    {
+      "authenticationMethodId": "",
+      "authenticationType": 0,
+      "authenticationVersion": "",
+      "explanation": "",
+      "name": ""
+    }
+  ],
+  "scaStatus": ""
+}
+    ```
+
+    ```json {{ title: '4xx' }}
+{
+  "links": {},
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ]
+}
+    ```
+
+    ```json {{ title: '401' }}
+{
+  "links": {},
+  "statusCode": "",
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ]
+}
+    ```
+
+
+    </CodeGroup> 
+  </Col>   
+
+  </Col>
+</Row>
+
+  ### Responses
+
+|Status|Description|
+|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|
+|405|[Method Not Allowed](https://tools.ietf.org/html/rfc7231#section-6.5.5)|
+|409|[Conflict](https://tools.ietf.org/html/rfc7231#section-6.5.8)|
+
+---
+
+## Check cancellation status {{ tag: 'GET', label: '/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations/{cancellationId}' }}
+
+<Row>
+  <Col>
+    Retrieve the Strong Customer Authentication (SCA) status of a cancellation authorisation for a specific payment. 
+    
+    <Note>
+    Determine whether the Strong Customer Authentication (SCA) status associated with the cancellation authorization is successful or requires further action. 
+    </Note>
+
+    <Properties title="Path parameters">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-service</span>} type="string">
+      The type of payment service being used for the transaction. Available options: **_payments_**.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-product</span>} type="string">
+      The type of payment product being used. Available options: **_internal-transfers_**, **_sepa-credit-transfers_**.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>paymentId</span>} type="string">
+      The ID of the payment transaction.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>cancellationId</span>} type="string">
+      The ID of the cancellation authorisation.
+      </Property>
+    </Properties>
+
+
+
+    <Properties title="Headers">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>x-Request-ID</span>} type="string(uuid)">
+        ID of the request, unique to the call, as determined by the initiating party.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Ocp-Apim-Subscription-Key</span>} type="string">
+        A unique identifier related to the registered merchant in the snappi API environment, available within the application's details.
+      </Property>      
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Certificate</span>} type="string(uuid)">
+        The certificate used for signing the request, in base64 encoding. Must be contained if a signature is contained.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>ClientId</span>} type="string">
+        The ID of the client, as determined by the TPP.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>consentID</span>} type="string">
+        The consentId of the related AIS consent, which was performed prior to this payment initiation.
+      </Property>
+    </Properties>
+
+
+    <Properties title="Response attributes">
+      <Property name="scaStatus" type="string">
+      The status of the SCA performed by the ASPSP. Available options: **_0_** - **_7_**.
+      - **_0_** - The SCA status is not known.
+      - **_1_** - The SCA status is received.
+      - **_2_** - The SCA status is psuIdentified.
+      - **_3_** - The SCA status is psuAuthenticated.
+      - **_4_** - The SCA status is scaMethodSelected.
+      - **_5_** - The SCA status is started.
+      - **_6_** - The SCA status is finalised.
+      - **_7_** - The SCA status is failed.
+      </Property>
+      <Property name="tppMessages" type="object">
+      The list of messages returned from the ASPSP. It includes:
+      - `category` (integer): The message category of the error. Available options: **_0_**, **_1_**.
+      - `code` (integer): The code of the error. 
+      - `path` (string): The path associated with the error.
+      - `text` (string): The text associated with the error.
+      </Property>
+      <Property name="statusCode" type="integer">
+      The status code of the payment initiation. Available options: **_0_**, **_1_**.
+      </Property>
+      <Property name="links" type="object">
+      Links associated with the error.
+      </Property>      
+    </Properties>  
+
+
+  </Col>
+
+  <Col sticky>
+    <CodeGroup title="Request" tag="GET" label="/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations/{cancellationId}">
+      ```bash {{ title: 'cURL' }}
+curl -X GET /v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations/{cancellationId} \
+  -H 'Accept: application/json' \
+  -H 'X-Request-ID: string' \
+  -H 'Certificate: string' \
+  -H 'ClientId: string' 
+      ```
+
+      ```csharp
+var client = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Get, "//v1/<string>/<string>/<string>/cancellation-authorisations/<string>");
+request.Headers.Add("X-Request-ID", "<uuid>");
+request.Headers.Add("Certificate", "<string>");
+request.Headers.Add("ClientId", "<string>");
+request.Headers.Add("Accept", "application/json");
+var response = await client.SendAsync(request);
+response.EnsureSuccessStatusCode();
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+      ```
+
+      ```php {{ title: 'PHP' }}
+<?php
+
+require 'vendor/autoload.php';
+
+$headers = array(
+    'Accept' => 'application/json',
+    'X-Request-ID' => 'string',
+    'Certificate' => 'string',
+    'ClientId' => 'string',
+);
+
+$client = new \GuzzleHttp\Client();
+
+// Define array of request body.
+$request_body = array();
+
+try {
+    $response = $client->request('GET','/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations/{cancellationId}', array(
+        'headers' => $headers,
+        'json' => $request_body,
+       )
+    );
+    print_r($response->getBody()->getContents());
+ }
+ catch (\GuzzleHttp\Exception\BadResponseException $e) {
+    // handle exception or api errors.
+    print_r($e->getMessage());
+ }
+
+ // ...
+      ```
+
+      ```ruby {{ title: 'Ruby' }}
+require 'rest-client'
+require 'json'
+
+headers = {
+  'Accept' => 'application/json',
+  'X-Request-ID' => 'string',
+  'Certificate' => 'string',
+  'ClientId' => 'string'
+}
+
+result = RestClient.get '/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations/{cancellationId}',
+  params: {
+  }, headers: headers
+
+p JSON.parse(result)
+      ```
+
+      ```javascript {{ title: 'Javascript' }}
+const headers = {
+  'Accept':'application/json',
+  'X-Request-ID':'string',
+  'Certificate':'string',
+  'ClientId':'string'
+};
+
+fetch('/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations/{cancellationId}',
+{
+  method: 'GET',
+
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+      ```
+
+
+      ```python {{ title: 'Python' }}
+import requests
+headers = {
+  'Accept': 'application/json',
+  'X-Request-ID': 'string',
+  'Certificate': 'string',
+  'ClientId': 'string'
+}
+
+r = requests.get('/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations/{cancellationId}', headers = headers)
+
+print(r.json())
+      ```
+
+      ```go
+package main
+
+import (
+  "fmt"
+  "net/http"
+  "io/ioutil"
+)
+
+func main() {
+
+  url := "//v1/<string>/<string>/<string>/cancellation-authorisations/<string>"
+  method := "GET"
+
+  client := &http.Client {
+  }
+  req, err := http.NewRequest(method, url, nil)
+
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  req.Header.Add("X-Request-ID", "<uuid>")
+  req.Header.Add("Certificate", "<string>")
+  req.Header.Add("ClientId", "<string>")
+  req.Header.Add("Accept", "application/json")
+
+  res, err := client.Do(req)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  defer res.Body.Close()
+
+  body, err := ioutil.ReadAll(res.Body)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  fmt.Println(string(body))
+}
+      ```      
+
+     
+    </CodeGroup>
+
+  <Col sticky>
+    <CodeGroup title="Response examples">
+
+    ```json {{ title: '200' }}
+{
+  "scaStatus": 0
+}    
+    ```
+
+    ```json {{ title: '4xx' }}
+{
+  "links": {},
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ]
+}
+    ```
+
+    ```json {{ title: '401' }}
+{
+  "links": {},
+  "statusCode": "",
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ]
+}
+    ```    
+
+
+
+    </CodeGroup> 
+  </Col>   
+
+  </Col>
+</Row>
+
+  ### Responses
+
+|Status|Description|
+|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|
+|405|[Method Not Allowed](https://tools.ietf.org/html/rfc7231#section-6.5.5)|
+|409|[Conflict](https://tools.ietf.org/html/rfc7231#section-6.5.8)|
+---
+
+
+## Modify payment cancellation {{ tag: 'PUT', label: '/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations/{cancellationId}' }}
+
+<Row>
+  <Col>
+    Update the PSU (Payment Service User) data for a payment cancellation authorization. 
+    
+    <Note>
+    Modify the authorisation details related to cancelling a payment, thus update the cancellation authorisation data for a specific payment transaction.
+    </Note>
+
+
+    <Properties title="Path parameters">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-service</span>} type="string">
+      The type of payment service being used for the transaction. Available options: **_payments_**.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-product</span>} type="string">
+      The type of payment product being used. Available options: **_internal-transfers_**, **_sepa-credit-transfers_**.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>paymentId</span>} type="string">
+      The ID of the payment transaction.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>cancellationId</span>} type="string">
+      The ID of the cancellation authorisation.
+      </Property>
+    </Properties>  
+
+
+
+    <Properties title="Headers">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>x-Request-ID</span>} type="string(uuid)">
+        ID of the request, unique to the call, as determined by the initiating party.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Ocp-Apim-Subscription-Key</span>} type="string">
+        A unique identifier related to the registered merchant in the snappi API environment, available within the application's details.
+      </Property>      
+      <Property name="Certificate" type="string(uuid)">
+        The certificate used for signing the request, in base64 encoding. Must be contained if a signature is contained.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>ClientId</span>} type="string">
+        The ID of the client, as determined by the TPP. 
+      </Property>                             
+    </Properties>
+
+    <Properties title="Body parameters">
+      <Property name="scaAuthenticationData" type="string">
+      Data related to Strong Customer Authentication (SCA) for the payment authorisation process.
+      </Property>
+    </Properties>
+
+
+    <Properties title="Response attributes">
+    <Property name="statusCode" type="integer">
+    Indicates the status code of the API response, such as success or failure. Available options:
+    - **_0_** - The request was successful.
+    - **_1_** - The request failed.
+    </Property>
+      <Property name="tppMessages" type="object">
+      The list of messages returned from the ASPSP. It includes:
+      - `category` (integer): The message category of the error. Available options: **_0_**, **_1_**.
+      - `code` (integer): The code of the error. 
+      - `path` (string): The path associated with the error.
+      - `text` (string): The text associated with the error.
+      </Property>
+      <Property name="links" type="object">
+      Links associated with the error.
+      </Property>      
+    </Properties>  
+
+
+  </Col>
+
+  <Col sticky>
+    <CodeGroup title="Request" tag="PUT" label="/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations/{cancellationId}">
+      ```bash {{ title: 'cURL' }}
+curl -X PUT /v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations/{cancellationId} \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json' \
+  -H 'X-Request-ID: string' \
+  -H 'Certificate: string' \
+  -H 'ClientId: string' \
+  -d '{"scaAuthenticationData":"string"}'
+      ```
+
+      ```csharp
+var client = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Put, "//v1/<string>/<string>/<string>/cancellation-authorisations/<string>");
+request.Headers.Add("X-Request-ID", "<uuid>");
+request.Headers.Add("Certificate", "<string>");
+request.Headers.Add("ClientId", "<string>");
+request.Headers.Add("Accept", "application/json");
+var content = new StringContent("{\n  \"scaAuthenticationData\": \"<string>\"\n}", null, "application/json");
+request.Content = content;
+var response = await client.SendAsync(request);
+response.EnsureSuccessStatusCode();
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+      ```
+
+      ```php {{ title: 'PHP' }}
+<?php
+
+require 'vendor/autoload.php';
+
+$headers = array(
+    'Content-Type' => 'application/json',
+    'Accept' => 'application/json',
+    'X-Request-ID' => 'string',
+    'Certificate' => 'string',
+    'ClientId' => 'string',
+);
+
+$client = new \GuzzleHttp\Client();
+
+// Define array of request body.
+$request_body = array();
+
+try {
+    $response = $client->request('PUT','/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations/{cancellationId}', array(
+        'headers' => $headers,
+        'json' => $request_body,
+       )
+    );
+    print_r($response->getBody()->getContents());
+ }
+ catch (\GuzzleHttp\Exception\BadResponseException $e) {
+    // handle exception or api errors.
+    print_r($e->getMessage());
+ }
+
+ // ...
+      ```
+
+      ```ruby {{ title: 'Ruby' }}
+require 'rest-client'
+require 'json'
+
+headers = {
+  'Content-Type' => 'application/json',
+  'Accept' => 'application/json',
+  'X-Request-ID' => 'string',
+  'Certificate' => 'string',
+  'ClientId' => 'string'
+}
+
+result = RestClient.put '/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations/{cancellationId}',
+  params: {
+  }, headers: headers
+
+p JSON.parse(result)
+      ```
+
+
+
+      ```javascript {{ title: 'Javascript' }}
+const inputBody = '{
+  "scaAuthenticationData": "string"
+}';
+const headers = {
+  'Content-Type':'application/json',
+  'Accept':'application/json',
+  'X-Request-ID':'string',
+  'Certificate':'string',
+  'ClientId':'string'
+};
+
+fetch('/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations/{cancellationId}',
+{
+  method: 'PUT',
+  body: inputBody,
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+      ```
+
+
+      ```python {{ title: 'Python' }}
+import requests
+headers = {
+  'Content-Type': 'application/json',
+  'Accept': 'application/json',
+  'X-Request-ID': 'string',
+  'Certificate': 'string',
+  'ClientId': 'string'
+}
+
+r = requests.put('/v1/{payment-service}/{payment-product}/{paymentId}/cancellation-authorisations/{cancellationId}', headers = headers)
+
+print(r.json())
+      ```
+
+      ```go
+package main
+
+import (
+  "fmt"
+  "strings"
+  "net/http"
+  "io/ioutil"
+)
+
+func main() {
+
+  url := "//v1/<string>/<string>/<string>/cancellation-authorisations/<string>"
+  method := "PUT"
+
+  payload := strings.NewReader(`{
+  "scaAuthenticationData": "<string>"
+}`)
+
+  client := &http.Client {
+  }
+  req, err := http.NewRequest(method, url, payload)
+
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  req.Header.Add("X-Request-ID", "<uuid>")
+  req.Header.Add("Certificate", "<string>")
+  req.Header.Add("ClientId", "<string>")
+  req.Header.Add("Content-Type", "application/json")
+  req.Header.Add("Accept", "application/json")
+
+  res, err := client.Do(req)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  defer res.Body.Close()
+
+  body, err := ioutil.ReadAll(res.Body)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  fmt.Println(string(body))
+}
+      ```      
+
+     
+    </CodeGroup>
+
+  <Col sticky>
+    <CodeGroup title="Response examples">
+
+
+    ```json {{ title: '4xx' }}
+{
+  "links": {},
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ]
+}
+    ```
+
+
+    ```json {{ title: '401' }}
+{
+  "links": {},
+  "statusCode": "",
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ]
+}
+    ```
+
+    </CodeGroup> 
+  </Col>   
+
+  </Col>
+</Row>
+
+  ### Responses
+
+|Status|Description|
+|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|
+|405|[Method Not Allowed](https://tools.ietf.org/html/rfc7231#section-6.5.5)|
+|409|[Conflict](https://tools.ietf.org/html/rfc7231#section-6.5.8)|
+---
+*/}
+
+
+## Check payment status {{ tag: 'GET', label: '/v1/{payment-service}/{payment-product}/{paymentId}/status' }}
+
+<Row>
+  <Col>
+    Retrieve the current status of a payment initiation, providing information on the availability of funds and transaction status.
+    
+    <Note>
+    Obtain information about the transaction status and fund availability and track the progress of payment requests.
+    </Note>
+
+
+    <Properties title="Path parameters">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-service</span>} type="string">
+      The payment service that is used to initiate the payment. Available options: **_payments_**.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>payment-product</span>} type="string">
+      The addressed payment product endpoint, e.g., for SEPA Credit Transfers (SCT). The ASPSP will publish which of the payment products/endpoints will be supported. Available options: **_internal-transfers_**, **_sepa-credit-transfers_**.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>paymentId</span>} type="string">
+      The payment ID of the payment to retrieve.
+      </Property>
+    </Properties>
+
+    <Properties title="Headers">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>x-Request-ID</span>} type="string(uuid)">
+        ID of the request, unique to the call, as determined by the initiating party.
+      </Property>     
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Certificate</span>} type="string">
+      The certificate used for signature verification (<strong>Certificate</strong> on Devs Portal App).
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>ClientId</span>} type="string">
+      The client ID associated with the request (<strong>Application ID</strong> on Devs Portal App).
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Ocp-Apim-Subscription-Key</span>} type="string">
+        A unique identifier related to the registered merchant in the Snappi API environment, available within the application's details (<strong>Subscription Key</strong> on Devs Portal App).
+      </Property>                      
+    </Properties>
+
+    <Properties title="Response attributes">
+      <Property name="fundsAvailable" type="boolean">
+      Indicates whether the funds are available for the payment initiation. Available options: **_true_**, **_false_**.
+      </Property>    
+      <Property name="transactionStatus" type="integer">
+      The status of the payment initiation. Available options:
+      - **_0_** - The payment initiation is not known.
+      - **_1_** - The payment initiation is received.
+      - **_2_** - The payment initiation is accepted for execution.
+      - **_3_** - The payment initiation is rejected.
+      - **_4_** - The payment initiation is successful.
+      - **_5_** - The payment initiation is failed.
+      - **_6_** - The payment initiation is cancelled.
+      - **_7_** - The payment initiation is expired.
+      </Property>
+      <Property name="statusCode" type="integer">
+      The status code of the payment initiation. Available options: **_0_**, **_1_**.
+      </Property>
+      <Property name="tppMessages" type="object">
+      The list of messages returned from the ASPSP. It includes:
+      - `category` (integer): The message category of the error. Available options: **_0_**, **_1_**.
+      - `code` (integer): The code of the error. 
+      - `path` (string): The path associated with the error.
+      - `text` (string): The text associated with the error.
+      </Property>
+      <Property name="links" type="object">
+      Links associated with the error.
+      </Property>      
+    </Properties>  
+
+
+  </Col>
+
+  <Col sticky>
+    <CodeGroup title="Request" tag="GET" label="/v1/{payment-service}/{payment-product}/{paymentId}/status">
+      ```bash {{ title: 'cURL' }}
+curl -X GET /v1/{payment-service}/{payment-product}/{paymentId}/status \
+  -H 'Accept: application/json' \
+  -H 'X-Request-ID: string' \
+  -H 'Certificate: string' \
+  -H 'ClientId: string' \
+  -H 'Ocp-Apim-Subscription-Key: string'
+      ```
+
+
+      ```csharp
+var client = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Get, "//v1/<string>/<string>/<string>/status");
+request.Headers.Add("X-Request-ID", "<uuid>");
+request.Headers.Add("Certificate", "<string>");
+request.Headers.Add("ClientId", "<string>");
+request.Headers.Add("Ocp-Apim-Subscription-Key", "<string>");
+request.Headers.Add("Accept", "application/json");
+var response = await client.SendAsync(request);
+response.EnsureSuccessStatusCode();
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+      ```
+
+      ```php {{ title: 'PHP' }}
+<?php
+
+require 'vendor/autoload.php';
+
+$headers = array(
+    'Accept' => 'application/json',
+    'X-Request-ID' => 'string',
+    'Certificate' => 'string',
+    'ClientId' => 'string',
+    'Ocp-Apim-Subscription-Key' => 'string',
+);
+
+$client = new \GuzzleHttp\Client();
+
+// Define array of request body.
+$request_body = array();
+
+try {
+    $response = $client->request('GET','/v1/{payment-service}/{payment-product}/{paymentId}/status', array(
+        'headers' => $headers,
+        'json' => $request_body,
+       )
+    );
+    print_r($response->getBody()->getContents());
+ }
+ catch (\GuzzleHttp\Exception\BadResponseException $e) {
+    // handle exception or api errors.
+    print_r($e->getMessage());
+ }
+
+ // ...
+      ```
+
+      ```ruby {{ title: 'Ruby' }}
+require 'rest-client'
+require 'json'
+
+headers = {
+  'Accept' => 'application/json',
+  'X-Request-ID' => 'string',
+  'Certificate' => 'string',
+  'ClientId' => 'string',
+  'Ocp-Apim-Subscription-Key' => 'string'
+}
+
+result = RestClient.get '/v1/{payment-service}/{payment-product}/{paymentId}/status',
+  params: {
+  }, headers: headers
+
+p JSON.parse(result)
+      ```
+
+      ```javascript {{ title: 'Javascript' }}
+const headers = {
+  'Accept':'application/json',
+  'X-Request-ID':'string',
+  'Certificate':'string',
+  'ClientId':'string',
+  'Ocp-Apim-Subscription-Key':'string'
+};
+
+fetch('/v1/{payment-service}/{payment-product}/{paymentId}/status',
+{
+  method: 'GET',
+
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+      ```
+
+      ```python {{ title: 'Python' }}
+import requests
+headers = {
+  'Accept': 'application/json',
+  'X-Request-ID': 'string',
+  'Certificate': 'string',
+  'ClientId': 'string',
+  'Ocp-Apim-Subscription-Key': 'string'
+}
+
+r = requests.get('/v1/{payment-service}/{payment-product}/{paymentId}/status', headers = headers)
+
+print(r.json())
+      ```
+
+      ```go
+package main
+
+import (
+  "fmt"
+  "net/http"
+  "io/ioutil"
+)
+
+func main() {
+
+  url := "//v1/<string>/<string>/<string>/status"
+  method := "GET"
+
+  client := &http.Client {
+  }
+  req, err := http.NewRequest(method, url, nil)
+
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  req.Header.Add("X-Request-ID", "<uuid>")
+  req.Header.Add("Certificate", "<string>")
+  req.Header.Add("ClientId", "<string>")
+  req.Header.Add("Ocp-Apim-Subscription-Key", "<string>")
+  req.Header.Add("Accept", "application/json")
+
+  res, err := client.Do(req)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  defer res.Body.Close()
+
+  body, err := ioutil.ReadAll(res.Body)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  fmt.Println(string(body))
+}
+      ```      
+
+     
+    </CodeGroup>
+
+  <Col sticky>
+    <CodeGroup title="Response examples">
+
+    ```json {{ title: '200' }}
+{
+  "transactionStatus": 0,
+  "fundsAvailable": false
+}
+    ```
+
+    ```json {{ title: '400' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '401' }}
+{
+  "statusCode": "",
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '403' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '404' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '405' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+    ```json {{ title: '409' }}
+{
+  "tppMessages": [
+    {
+      "category": 0,
+      "code": 0,
+      "path": "",
+      "text": ""
+    }
+  ],
+  "links": ""
+}
+    ```
+
+
+    </CodeGroup> 
+  </Col>   
+
+  </Col>
+</Row>
+
+  ### Responses
+
+|Status|Description|
+|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|
+|405|[Method Not Allowed](https://tools.ietf.org/html/rfc7231#section-6.5.5)|
+|409|[Conflict](https://tools.ietf.org/html/rfc7231#section-6.5.8)|
+---
+

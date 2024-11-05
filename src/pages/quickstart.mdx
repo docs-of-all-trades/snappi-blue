@@ -1,0 +1,310 @@
+import HttpMethodsTable from '../components/HttpMethodsTable'
+import CustomProperty from '../components/custom-property'
+import { Steps, Step, StepImage } from '../components/Step'
+
+export const description =
+  'This guide will get you all set up and ready to use the snappi API. We’ll cover how to get started an API client and how to make your first API request.'
+
+# Quickstart
+
+Welcome to the API fundamentals section of our developers portal. {{ className: 'lead' }}
+
+<Tip>
+This guide is designed to jumpstart your journey with REST APIs, providing you with the essential knowledge and tools to begin integrating and leveraging our APIs in your application. 
+</Tip>
+
+----
+
+## Understanding REST APIs
+
+<strong>REST</strong> (Representational State Transfer), is an architectural style for designing networked applications. It relies on a stateless, client-server, cacheable communications protocol — and in virtually all cases, the HTTP protocol is used. 
+REST APIs are designed around resources, which are any kind of object, data, or service that can be accessed by the client. A resource is identified by URIs (Uniform Resource Identifiers) which are used to fetch a representation of the resource. 
+Through the use of HTTP methods, REST APIs enable you to perform operations on these resources, such as creating, retrieving, updating, or deleting them.
+
+----
+
+## REST HTTP Methods
+
+REST APIs primarily use four HTTP methods to perform operations on resources:
+
+| Method | Description |
+| ------ | ----------- |
+| <Button className="bg-green-500 hover:bg-green-600 text-white font-bold py-0.5 px-2 rounded-full text-xs">GET</Button> | Retrieve info about a resource. It is a read-only operation and does not change the state of the resource. |
+| <Button className="bg-sky-500 hover:bg-sky-600 text-black hover:text-white font-bold py-0.5 px-2 rounded-full text-xs">POST</Button> | Create a new resource. It can also be used to trigger operations that don't actually create resources. |
+| <Button className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-0.5 px-2 rounded-full text-xs">PUT</Button> | Update an existing resource or create a new resource if it does not exist. |
+| <Button className="bg-red-500 hover:bg-red-600 text-white font-bold py-0.5 px-2 rounded-full text-xs">DELETE</Button> | Remove a REST API resource. |
+
+
+
+
+<Note>
+Each of these methods corresponds to the CRUD (Create, Read, Update, Delete) operations commonly needed in web applications.
+</Note>
+
+----
+
+## Choosing your client
+
+To make an API request, you need a client — a tool or library that sends the request to the API server. There are several options available:
+
+- **Command Line Tools**: cURL is a versatile command-line tool available on most Unix-based systems (including Linux and macOS) and Windows. It's useful for making quick requests.
+
+- **HTTP Libraries**: Most programming languages offer libraries to make HTTP requests. Examples include requests in Python, HttpClient in .NET, and axios or fetch in JavaScript.
+
+- **API Development Environments**: Tools like Postman or Insomnia provide a user-friendly interface for making API requests, organizing them, and even documenting and sharing them with others.
+
+<Note>
+Choose the client that best fits your development environment and your familiarity with the tools.
+</Note>
+
+----
+
+## Making an API request
+
+To make a REST API request, follow these steps:
+
+<Steps>
+  <Step number={1} title="Identify the API Endpoint.">
+    An endpoint is a URL that represents the API operation you want to perform.
+  </Step>
+
+  <Step number={2} title="Choose the HTTP Method.">
+    Based on the operation you want to perform, select the appropriate HTTP method.
+  </Step>
+
+  <Step number={3} title="Include Headers.">
+    Some API requests require headers. 
+    <Note>
+    Common headers include Content-Type (to specify the format of the data being sent) and Authorization (for API keys or tokens).
+    </Note>
+  </Step>
+
+  <Step number={4} title="Send the Request.">
+    Using your chosen client, send the request to the API endpoint. If you're creating or updating a resource, you may need to include data in the body of the request.
+  </Step>
+
+  <Step number={5} title="Handle the response.">
+    The API will respond with a status code indicating the result of the request (e.g., **200 OK** for success, **404 Not Found** for an invalid endpoint). The response may also include data in the body, typically in **JSON** format.
+  </Step>
+
+</Steps>
+
+
+Here's an example using cURL to make a GET request:
+
+  ```bash {{ title: 'cURL' }}
+  curl -X GET https://api.example.com/users
+  ```
+
+And here's how you might make a POST request with cURL, including data:
+
+  ```bash {{ title: 'cURL' }}
+  curl -X POST https://api.example.com/users 
+  -H "Content-Type: application/json" 
+  -d '{"name":"John Doe","email":"john@example.com"}'
+  ```
+
+REST APIs are a powerful way to interact with web services, allowing you to leverage existing resources or create your own. By understanding the basics of REST, the HTTP methods available, choosing the right client, and knowing how to make requests, you're well on your way to integrating APIs into your projects.
+
+----
+
+## Snappi conventions
+
+While browsing through our APIs, you will encounter various notations and conventions that crucial for effective integration.
+Below is a detailed explanation of all the common symbols, flags and stylistic elements you may come across:
+
+#### 1. **Field Requirements**
+   - **Required Fields:**
+     - **Indicator:** Required fields are typically marked with pink.
+     - **Explanation:** These fields must be included in the API request for it to be successful. Omitting these fields will result in an error response.
+     - **Display Style:** Often shown in bold text with a pink, snappi indicator next to the field name.
+
+     - **Example:** 
+        <CustomProperty name={<span style={{ color: 'rgb(255,121,170)' }}>consentId</span>} type="string(uuid)">      
+          The unique identifier for the consent provided by the user.
+        </CustomProperty>
+
+#### 2. **Field Types**
+   - **Data Type Indicators:**
+     - **String:** Often represented as `string` or `"text"`.
+     - **Integer:** Denoted by `integer`.
+     - **Boolean:** Shown as `boolean`.
+     - **Array/List:** Represented as `array[]`.
+     - **Object:** Displayed as `object{}`.
+     - **Date/Time:** Shown as `date`, `datetime`, or sometimes as a specific format like `YYYY-MM-DD`.
+
+     -  **Example:**
+      ```json
+     {
+       "name": "John Doe",   // string
+       "age": 30,            // int
+       "isActive": true,     // bool
+       "tags": ["api", "doc"], // array
+       "profile": {          // object
+           "id": "12345",
+           "role": "admin"
+       },
+       "created_at": "2024-08-17T00:00:00Z" // datetime
+     }
+      ```
+
+#### 3. **Parameter Types**
+   - **Path Parameters:**
+     - **Indicator:** Usually represented with curly braces `{}`.
+     - **Example:** `/users/{user_id}`
+     - **Explanation:** These are required parameters embedded within the endpoint URL, specifying the resource to be accessed.
+   - **Query Parameters:**
+     - **Indicator:** Represented as key-value pairs after a question mark `?` in the URL.
+     - **Example:** `/users?name=JohnDoe&age=30`
+     - **Explanation:** These are additional parameters that refine the response based on the query values provided.
+   - **Header Parameters:**
+     - **Indicator:** Represented within a headers section, often shown as key-value pairs.
+     - **Example:** `"Authorization: Bearer token12345"`
+     - **Explanation:** These parameters are sent in the request header and are often used for authentication or content type specifications.
+   - **Body Parameters:**
+     - **Indicator:** Represented as a JSON object, form data, or XML payload.
+     - **Example:** 
+       ```json
+       {
+         "name": "John Doe",
+         "email": "john.doe@example.com"
+       }
+       ```
+     - **Explanation:** These parameters are sent in the request body, typically for POST or PUT requests.
+
+<Note>
+By understanding these notations and conventions, developers can more easily interpret and implement APIs as documented, leading to smoother integrations and fewer errors.
+</Note>
+
+{/*
+The snappi APIs are based on REST principles, providing a simple and secure way to process payment flows.
+
+Our APIs are organized around REST. It is designed to have predictable, resource-oriented URLs and to use HTTP response codes to indicate API errors.
+
+{/*To work with our API, you can:
+
+- Use the HTTP/REST endpoints
+
+- Take advantage of our SDKs
+
+- Make use of our official integrations
+
+
+snappi supports the following REST API methods:
+
+| Method   | Description                                      |
+| -------- | ------------------------------------------------ |
+| **GET**   | Retrieve information about the REST API resource |
+| **POST**   | Create a REST API resource                       |
+| **PUT**    | Update a REST API resource                       |
+| **PATCH**  | Update a REST API resource                       |
+| **DELETE** | Delete a REST API resource or related component  |
+
+snappi offers two environments:
+
+<CodeGroup>
+
+```bash {{ title: 'Production' }}
+https://api.snappi.com
+```
+
+```bash {{ title: 'Sandbox' }}
+https://api.sandbox.snappi.com
+```
+
+</CodeGroup>
+
+
+The API playground is an interactive environment to make requests and preview an API endpoint.
+
+
+----
+
+Get all set up and ready to use the snappi API environment. Let's cover how to get started using one of our API clients and how to make your first API request. We'll also look at where to go next to find all the information you need to take full advantage of our powerful REST APIs. {{ className: 'lead' }}
+
+<Note>
+  Before you can make requests to the snappi API, you will need to grab your API
+  key from your dashboard. You find it under [Settings » API](#).
+</Note>
+
+## Choose your client
+
+Before making your first API request, you need to pick which API client you will use. In addition to good ol' cURL HTTP requests, snappi offers clients for JavaScript, Python, and PHP. In the following example, you can see how to install each client.
+
+<CodeGroup>
+  ```bash {{ title: 'cURL' }}
+  # cURL is most likely already installed on your machine
+  curl --version
+  ```
+
+```bash {{ language: 'js' }}
+# Install the snappi JavaScript SDK
+npm install @example/snappi-api --save
+```
+
+```bash {{ language: 'python' }}
+# Install the snappi Python SDK
+pip install snappi_api
+```
+
+```bash {{ language: 'php' }}
+# Install the snappi PHP SDK
+composer require snappi/sdk
+```
+
+</CodeGroup>
+
+<div className="not-prose">
+  <Button
+    href="/sdks"
+    variant="text"
+    arrow="right"
+    children="Check out our list of first-party SDKs"
+  />
+</div>
+
+## Making your first API request
+
+After picking your preferred client, you are ready to make your first call to the snappi API. Below, you can see how to send a GET request to the Conversations endpoint to get a list of all your conversations. In the cURL example, results are limited to ten conversations, the default page length for each client.
+
+<CodeGroup tag="GET" label="">
+  ```bash {{ title: 'cURL' }}
+
+  ```
+
+```js
+
+```
+
+```python
+
+```
+
+```php
+
+```
+
+</CodeGroup>
+
+{/*
+<div className="not-prose">
+  <Button
+    href="/conversations"
+    variant="text"
+    arrow="right"
+    children="Read the docs for the Conversations endpoint"
+  />
+</div>
+
+
+## What's next?
+
+Great, you're now set up with an API client and have made your first request to the API. 
+
+{/*
+Here are a few links that might be handy as you venture further into the snappi API:
+
+- [Grab your API key from the snappi dashboard](#)
+- [Check out our snappi pay later API](/buy-now-pay-later)
+- [Learn about the PSD2 regulation ](/psd2)
+*/}

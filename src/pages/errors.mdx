@@ -1,0 +1,68 @@
+export const description =
+  'In this guide, we will talk about what happens when something goes wrong while you work with the API.'
+
+# Errors
+
+Let's talk about what happens when something goes wrong while you work with the API. Let's look at some status codes and error types you might encounter. {{ className: 'lead' }}
+
+You can tell if your request was successful by checking the status code when receiving an API response. If a response comes back unsuccessful, you can use the error type and error message to figure out what has gone wrong and do some rudimentary debugging (before contacting support).
+
+<Note>
+  Before reaching out to support with an error, please be aware that 99% of all
+  reported errors are, in fact, user errors. Therefore, please carefully check
+  your code before contacting snappi support.
+</Note>
+
+---
+
+## Status codes
+
+Here is a list of the different categories of status codes returned by our APIs. Use these to understand if a request was successful.
+
+<Properties title="Click to expand">
+  <Property name="2xx">
+    A 2xx status code indicates a successful response.
+  </Property>
+
+{' '}
+
+{' '}
+
+{' '}
+<Property name="4xx">
+  A 4xx status code indicates a client error — this means it's a *you* problem.
+</Property>
+
+  <Property name="5xx">
+    A 5xx status code indicates a server error — you won't be seeing these.
+  </Property>
+</Properties>
+
+---
+
+## Error types
+
+<Row>
+  <Col>
+    Whenever a request is unsuccessful, our APIs will return an error response with an error type and message. You can use this information to understand better what has gone wrong and how to fix it. Most of the error messages are pretty helpful and actionable.
+
+    Here is an example of an error type supported by our APIs:
+
+
+
+  </Col>
+
+  <Col>
+    ```bash {{ title: "Error response" }}
+{
+"message": "string",
+"errors": [
+{
+  "field": "string",
+  "message": "string"
+}
+]
+}
+    ```
+  </Col>
+</Row>

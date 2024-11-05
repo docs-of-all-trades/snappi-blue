@@ -1,0 +1,304 @@
+import { Collapse } from "../components/Collapse"
+
+
+
+export const description =
+  'On this page, we’ll dive into the Merchant component of the snappi Pay Later API.'
+
+# Merchant
+
+{/*
+<>
+  <p>
+    <img src="/snappi_pay_later.png" alt="Alt text" title="title" />
+  </p>
+</>
+*/}
+
+Check the eligibility of a basket for Buy Now Pay Later (BNPL) financing options. {{ className: 'lead' }}
+
+<Note>
+This functionality is specific to merchants and helps determine whether a basket meets the necessary criteria for Pay Later financing.
+</Note>
+
+---
+
+## Check basket eligibility {{ tag: 'GET', label: '/merchant/checkbasketeligibilityforbnpl' }}
+
+<Row>
+  <Col>
+    Check the eligibility of a basket, based on the merchant ID and basket value. Determine whether a specific basket is eligible for Pay Later financing, and with details on monthly installment payment amounts and due dates.
+
+    <Important>
+    Make sure you have the required permissions and authentication credentials to access this endpoint.
+    </Important>
+
+
+    <Properties title="Query parameters">
+      <Property name="api-version" type="string">
+        The requested API version. The parameter is optional. Default value: `1.0`.
+      </Property>     
+      <Property name="basketValue" type="double">
+        The total value or amount of the basket or items being purchased.
+      </Property>  
+    </Properties>
+
+    <Properties title="Headers">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>X-Application-ID</span>} type="string">
+        The ID of the application making the request. This header parameter is required for authentication and identification purposes.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Ocp-Apim-Subscription-Key</span>} type="string">
+        A unique identifier related to the registered merchant in the snappi API environment, available within the application's details.
+      </Property>
+    </Properties>
+
+
+    <Properties title="Response attributes">
+      <Property name="isBNPLEligible" type="boolean">
+        A boolean value indicating whether the merchant is eligible for the Buy Now Pay Later (BNPL) service.
+      </Property>
+      <Property name="listOfMonthlyInstallments" type="array">
+        An array or list of monthly installments for the BNPL service, indicating the amount due each month, including:
+        - `paymentDay` (date-time) - The day of the month on which the installment payment is due.
+        - `paymentAmount` (double) - The amount of the payment for which the BNPL eligibility is being checked.
+        - `originalDueDate` (date-time) - The original due date of the payment for which the BNPL eligibility is being checked.
+      </Property>      
+      <Property name="message" type="string">
+        A detailed message or explanation related to the response or any encountered errors.
+      </Property>
+      <Property name="errors" type="array">
+        An array of error objects that provide details about any errors encountered during the API request.
+      </Property>
+      <Property name="field" type="string">
+        The field associated with the error.
+      </Property>
+      <Property name="type" type="string">
+        The type or category of the response or error, providing additional classification or information.
+      </Property>
+      <Property name="title" type="string">
+        The title of the response, providing a brief overview or summary of the response.
+      </Property> 
+      <Property name="status" type="integer">
+        The status of the API request, indicating whether it was successful or encountered any errors.
+      </Property>
+      <Property name="detail" type="array">
+        Additional details or information related to the response, providing more context or explanations.
+      </Property>
+      <Property name="instance" type="string">
+        The specific instance or occurrence of the response or error message.
+      </Property>                   
+    </Properties>    
+
+  </Col>
+
+  <Col sticky>
+    <CodeGroup title="Request" tag="GET" label="/merchant/checkbasketeligibilityforbnpl">
+      ```bash {{ title: 'cURL' }}
+curl -X GET /merchant/checkbasketeligibilityforbnpl \
+  -H 'Accept: application/json' \
+  -H 'X-Application-ID: string' \
+  -H 'Ocp-Apim-Subscription-Key: string'
+      ```
+
+      ```csharp
+var client = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Get, "//merchant/checkbasketeligibilityforbnpl?basketValue=<double>&api-version=1.0");
+request.Headers.Add("X-Application-ID", "<string>");
+request.Headers.Add("Ocp-Apim-Subscription-Key", "<string>");
+request.Headers.Add("Accept", "application/json");
+var response = await client.SendAsync(request);
+response.EnsureSuccessStatusCode();
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+
+      ```
+
+      ```php
+<?php
+
+require 'vendor/autoload.php';
+
+$headers = array(
+    'Accept' => 'application/json',
+    'X-Application-ID' => 'string',
+    'Ocp-Apim-Subscription-Key' => 'string',
+);
+
+$client = new \GuzzleHttp\Client();
+
+// Define array of request body.
+$request_body = array();
+
+try {
+    $response = $client->request('GET','/merchant/checkbasketeligibilityforbnpl', array(
+        'headers' => $headers,
+        'json' => $request_body,
+       )
+    );
+    print_r($response->getBody()->getContents());
+ }
+ catch (\GuzzleHttp\Exception\BadResponseException $e) {
+    // handle exception or api errors.
+    print_r($e->getMessage());
+ }
+
+ // ...
+
+      ```
+
+      ```ruby
+require "uri"
+require "net/http"
+
+url = URI("//merchant/checkbasketeligibilityforbnpl?basketValue=<double>&api-version=1.0")
+
+http = Net::HTTP.new(url.host, url.port);
+request = Net::HTTP::Get.new(url)
+request["X-Application-ID"] = "<string>"
+request["Accept"] = "application/json"
+request["Ocp-Apim-Subscription-Key"] = "<string>"
+
+response = http.request(request)
+puts response.read_body
+      ``` 
+
+      ```js
+const headers = {
+  'Accept':'application/json',
+  'X-Application-ID':'string',
+  'Ocp-Apim-Subscription-Key': 'string'
+};
+
+fetch('/merchant/checkbasketeligibilityforbnpl',
+{
+  method: 'GET',
+
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+      ```
+
+
+
+      ```python
+import requests
+
+url = "//merchant/checkbasketeligibilityforbnpl?basketValue=<double>&api-version=1.0"
+
+payload = {}
+headers = {
+  'X-Application-ID': '<string>',
+  'Accept': 'application/json',
+  'Ocp-Apim-Subscription-Key': '<string>'
+}
+
+response = requests.request("GET", url, headers=headers, data=payload)
+
+print(response.text)
+
+      ```
+
+      ```go
+package main
+
+import (
+  "fmt"
+  "net/http"
+  "io/ioutil"
+)
+
+func main() {
+
+  url := "//merchant/checkbasketeligibilityforbnpl?basketValue=%3Cdouble%3E&api-version=1.0"
+  method := "GET"
+
+  client := &http.Client {
+  }
+  req, err := http.NewRequest(method, url, nil)
+
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  req.Header.Add("X-Application-ID", "<string>")
+  req.Header.Add("Accept", "application/json")
+  req.Header.Add("Ocp-Apim-Subscription-Key", "<string>")
+
+  res, err := client.Do(req)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  defer res.Body.Close()
+
+  body, err := ioutil.ReadAll(res.Body)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  fmt.Println(string(body))
+}
+      ```
+
+
+   </CodeGroup>
+
+  <Col sticky>
+    <CodeGroup title="Response examples">
+
+    ```json {{ title: '200' }}
+{
+  "isBNPLEligible": true,
+  "listOfMonthlyInstallments": [
+    {
+      "paymentDay": "",
+      "paymentAmount": 0,
+      "originalDueDate": ""
+    }
+  ]
+}
+    ```
+
+    ```json {{ title: '400' }}
+{
+  "message": "",
+  "errors": [
+    {
+      "field": "",
+      "message": ""
+    }
+  ]
+}
+    ```
+
+    ```json {{ title: '500' }}
+{
+  "type": "",
+  "title": "",
+  "status": 0,
+  "detail": "",
+  "instance": ""
+}
+    ``` 
+    </CodeGroup> 
+  </Col>   
+
+  </Col>
+</Row>
+
+
+
+### Responses
+
+<div className="table">
+
+| Status | Description                                                             | Notes                                                                                             | 
+| ------ | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | 
+| **200**   | <a href="https://tools.ietf.org/html/rfc7231#section-6.3.1" target="_blank">OK</a>           | Returns check of basket eligibility for Pay Later.                                                           | 
+| **400**   |  <a href="https://tools.ietf.org/html/rfc7231#section-6.5.1" target="_blank">Bad Request</a>   | `basketValue` cannot be less than zero. / `X-Application-ID` not found or `basketValue` less than zero. / Basket's merchant was not found. | 
+| **500**   | <a href="https://tools.ietf.org/html/rfc7231#section-6.6.1" target="_blank">Internal Error</a> | Internal server error.                                                                                  | 
+
+</div>

@@ -1,0 +1,80 @@
+variables:
+  - group: "Credentials"
+  - name: POOL_NAME
+    value: $[coalesce(variables['PoolName'], 'Linux agent pool')]
+  - name: location
+    value: "germanywestcentral"
+  - name: locationShort
+    value: "gwc"
+  - name: customDomain
+    value: "docs"
+  - ${{if eq(parameters.Environment, 'SNAPPI_UAT')}}:
+      - name: env
+        value: "uat"
+      - name: envType
+        value: "Uat"
+      - name: dnsZone
+        value: "snappibank.com.gr"
+    
+parameters:
+  - name: Environment
+    displayName: "Environment"
+    type: string
+    default: "SNAPPI_UAT"
+    values:
+      - "SNAPPI_UAT"
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: Natech.Templates/Natech.Templates.DevOps
+      ref: main
+
+pool:
+  name: $(POOL_NAME)
+
+trigger: none
+
+stages:
+
+  - template: stages/bash-create-cert-from-script.yml@templates
+    parameters:
+      ServiceConnection: "SNAPPI_CERT"
+      KeyVaultName: "kv-afd-${{ variables.locationShort }}-001"
+      CN: "${{ variables.customDomain }}.${{ variables.dnsZone }}"
+      Condition: ${{ eq(parameters.Environment, 'SNAPPI_UAT') }}
+
+  - template: stages/docker-push.yml@templates
+    parameters:
+      ServiceConnection: "${{ parameters.Environment }}_DOCKER_GWC"
+      ProjectDirectory: "snappi-docs"
+      DockerfilePath: "snappi-docs/Dockerfile"
+      BuildContext: "snappi-docs"
+      Repository: "snappi.docs"
+
+  - template: stages/bicep-deploy-from-template.yml@templates
+    parameters:
+      ServiceConnection: ${{ parameters.Environment }}
+      Location: $(location)
+      FilePath: "./Natech.Templates.DevOps/IaC/Azure/LinuxDockerAppServicev2/main.bicep"
+      Arguments: "--parameters environmentType=${{ variables.envType }} acrName=$(snappi-acrUsername-${{variables.env}}-${{variables.locationShort}}) appServiceName=snapi-docs dockerImageName=snappi.docs acrPassword=$(snappi-acrPassword-${{variables.env}}-${{variables.locationShort}}) keyVault=$(snappi-keyvault-${{variables.env}}-${{variables.locationShort}}) keyvaultName=kv-snappi-${{variables.env}}-${{variables.locationShort}}-002 useApim=false deployFrontDoor=true customDomainName=${{ variables.customDomain }} dnsZoneName=${{ variables.dnsZone }} --name Docs.$(Build.BuildNumber)"
+
+  - template: stages/deploy-app-service-linux-azure.yml@templates
+    parameters:
+      ServiceConnection: ${{ parameters.Environment }}
+      AppName: "aps-snapi-docs-${{variables.env}}-${{variables.locationShort}}-001"
+      AcrUrl: $(snappi-acrUrl-${{variables.env}}-${{variables.locationShort}})
+      AcrPassword: $(snappi-acrPassword-${{variables.env}}-${{variables.locationShort}})
+      AcrUsername: $(snappi-acrUsername-${{variables.env}}-${{variables.locationShort}})
+      ImageName: "snappi.docs:latest"
+      DependsOn: BicepDeploy
+      DeploymentName: "SNAPPI_DOCS"
+      Environment: ${{ parameters.Environment }}
+
+  - template: stages/azure-approve-afd-pep-appservice.yml@templates
+    parameters:
+      ServiceConnection: ${{ parameters.Environment }}
+      AppName: "aps-snapi-docs-${{variables.env}}-${{variables.locationShort}}-001"
+      ResourceGroup: "rg-linux-apis-${{variables.env}}-${{variables.locationShort}}-001"
+

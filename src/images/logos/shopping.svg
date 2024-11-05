@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 115.5 120">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+      }
+
+      .cls-2 {
+        fill: #ffe900;
+      }
+
+      .cls-3 {
+        fill: #ffaceb;
+      }
+
+      .cls-4 {
+        fill: #f23224;
+      }
+
+      .cls-5 {
+        fill: #dccef9;
+      }
+
+      .cls-6 {
+        fill: #4f3381;
+      }
+    </style>
+  </defs>
+  <g id="Layer_1-2" data-name="Layer 1">
+    <g>
+      <rect id="Rectangle_498-2" data-name="Rectangle 498-2" class="cls-1" x="0" width="115.5" height="120" rx="33" ry="33"/>
+      <g>
+        <polygon class="cls-2" points="33.95 49.23 30.96 22.28 55.22 19.58 63.3 48.33 33.95 49.23"/>
+        <polygon class="cls-4" points="39.42 38.38 50.15 13.47 72.57 23.13 65.38 52.12 39.42 38.38"/>
+        <polygon class="cls-3" points="83.71 49.23 56.59 49.66 56.2 25.26 84.57 20.33 83.71 49.23"/>
+        <polygon class="cls-3" points="93.3 96.26 23.72 96.26 25.26 33.66 91.76 33.66 93.3 96.26"/>
+        <g>
+          <polygon class="cls-5" points="91.76 33.66 25.26 33.66 24.06 82.48 92.96 82.48 91.76 33.66"/>
+          <polygon class="cls-5" points="24.06 82.48 23.72 96.26 93.3 96.26 92.96 82.48 24.06 82.48"/>
+        </g>
+        <path class="cls-6" d="m58.51,65.8c-9.05,0-16.42-7.37-16.42-16.42v-9.38c0-1.38,1.12-2.49,2.49-2.49s2.49,1.12,2.49,2.49v9.38c0,6.31,5.13,11.44,11.44,11.44s11.44-5.13,11.44-11.44v-9.38c0-1.38,1.12-2.49,2.49-2.49s2.49,1.12,2.49,2.49v9.38c0,9.05-7.37,16.42-16.42,16.42Z"/>
+      </g>
+    </g>
+  </g>
+</svg>

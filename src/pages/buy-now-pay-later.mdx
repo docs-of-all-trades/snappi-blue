@@ -1,0 +1,236 @@
+import { Collapse } from "../components/Collapse"
+
+
+export const description =
+  'On this page, we’ll dive into the Buy Now Pay Later API.'
+
+# Pay Later
+
+{/*
+<>
+  <p>
+    <img src="/snappi_pay_later.png" alt="Alt text" title="title" />
+  </p>
+</>
+*/}
+
+The snappi Pay Later method allows you to repay the cost of your purchase over time instead of all at once. {{ className: 'lead' }}
+This payment flexibility typically leads to better conversion rates as well as higher cart values. {{ className: 'lead' }}
+
+
+<Row>
+  <Col>
+
+<Note>
+  This API allows you to interact with Baskets, Merchants and Terms of service
+  related to BNPL functionality. Merchants are shop owners. Each shop has a
+  single merchant who operates it.
+</Note>
+
+
+  </Col>
+
+  <Col sticky>
+    <CodeGroup title="Base URL" tag="" label="">
+      ```bash {{ title: 'Production' }}
+https://api.snappi.com
+      ```
+
+      ```bash {{ title: 'Sandbox' }}
+https://api.sandbox.snappi.com
+      ```
+
+    </CodeGroup>   
+
+  </Col>
+</Row>
+
+<br />
+
+
+## Check basket eligibility {{ tag: 'GET', label: '/merchant/checkbasketeligibilityforbnpl' }}
+
+<Row>
+  <Col>
+    Check the eligibility of a basket, based on the merchant ID and basket value. Determine whether a specific basket is eligible for BNPL financing, which provides customers with the option to pay for their purchases in installments.
+
+    <Important>
+     Make sure you have the required permissions and authentication credentials to access this endpoint.
+    </Important>
+
+    <Properties title="Query parameters">
+      <Property name="merchantId" type="integer">
+        The unique identifier for the merchant.
+      </Property>
+      <Property name="basketValue" type="string">
+        The total value of the basket.
+      </Property>  
+      <Property name="api-version" type="string">
+        The requested API version. Default value: `v1`.
+      </Property>        
+    </Properties>
+
+    <Properties title="Response attributes">
+      <Property name="isBNPLEligible" type="boolean">
+        Indicates whether the basket is eligible for the Buy Now Pay Later option.
+      </Property>
+      <Property name="listOfMonthlyInstallments" type="string">
+        A list of monthly installment amounts for the basket.
+      </Property>               
+    </Properties>    
+
+  </Col>
+
+  <Col sticky>
+    <CodeGroup title="Request" tag="GET" label="/merchant/checkbasketeligibilityforbnpl">
+      ```bash {{ title: 'cURL' }}
+      curl -X GET /merchant/checkbasketeligibilityforbnpl \
+        -H 'Accept: application/json'
+      ```
+
+      ```js
+const headers = {
+  'Accept':'application/json'
+};
+
+fetch('/merchant/checkbasketeligibilityforbnpl',
+{
+  method: 'GET',
+
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+      ```
+
+      ```python
+import requests
+headers = {
+  'Accept': 'application/json'
+}
+
+r = requests.get('/merchant/checkbasketeligibilityforbnpl', headers = headers)
+
+print(r.json())
+      ```
+
+      ```php
+<?php
+
+require 'vendor/autoload.php';
+
+$headers = array(
+    'Accept' => 'application/json',
+);
+
+$client = new \GuzzleHttp\Client();
+
+// Define array of request body.
+$request_body = array();
+
+try {
+    $response = $client->request('GET','/merchant/checkbasketeligibilityforbnpl', array(
+        'headers' => $headers,
+        'json' => $request_body,
+       )
+    );
+    print_r($response->getBody()->getContents());
+ }
+ catch (\GuzzleHttp\Exception\BadResponseException $e) {
+    // handle exception or api errors.
+    print_r($e->getMessage());
+ }
+
+ // ...
+
+      ```
+```csharp
+
+using System.Net.Http;
+using System.Net.Http.Headers;
+
+public class CheckBasketEligibilityForBnpl
+{
+    public static void Main(string[] args)
+    {
+        // Create an HTTP client
+        var client = new HttpClient();
+
+        // Set the Accept header to application/json
+        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+        // Send the GET request to the /merchant/checkbasketeligibilityforbnpl endpoint
+        var response = await client.GetAsync("/merchant/checkbasketeligibilityforbnpl");
+
+        // Check the response status code
+        if (response.IsSuccessStatusCode)
+        {
+            // Get the JSON response body
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(json);
+        }
+        else
+        {
+            // Handle error
+            Console.WriteLine($"Error: {response.StatusCode}");
+        }
+    }
+}
+
+```
+
+   </CodeGroup>
+
+  <Col sticky>
+    <CodeGroup title="Response examples">
+
+    ```json {{ title: '200' }}
+    {
+      "id": null,
+      "basketValue": null,
+      "merchantId": null,
+      "merchantName": "",
+      "requestId": "",
+      "orderIdentifier": "",
+      "bnplAmount": null,
+      "basketProducts": {},
+      "Merchant Data": "",
+      "phoneNumber": "",
+      "email": ""
+    }
+    ```
+
+    ```json {{ title: '400' }}
+    {
+      "message": "",
+      "errors": {}
+    }
+    ```
+
+    ```json {{ title: '500' }}
+    {
+      "type": "",
+      "title": "",
+      "status": null,
+      "detail": "",
+      "instance": ""
+    }
+    ``` 
+    </CodeGroup> 
+  </Col>   
+
+  </Col>
+</Row>
+
+
+
+### Responses
+
+| Status | Meaning                                                             | Description                                                                                             | 
+| ------ | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | 
+| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)             | Returns check of basket eligibility for BNPL.                                                           | 
+| 400    | [Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)    | No merchant could be found. ( MerchantId cannot be less than zero. BasketValue cannot be less than zero.) | 
+| 500    | [Internal Error](https://tools.ietf.org/html/rfc7231#section-6.6.1) | Internal server error.                                                                                  | 

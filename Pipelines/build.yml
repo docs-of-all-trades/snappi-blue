@@ -1,0 +1,29 @@
+variables:
+  - group: "Credentials"
+  - name: POOL_NAME
+    value: $[coalesce(variables['PoolName'], 'Linux agent pool')]
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: Natech.Templates/Natech.Templates.DevOps
+      ref: main
+
+pool:
+  name: $(POOL_NAME)
+
+trigger: none
+
+pr:
+  autoCancel: true
+
+stages:
+
+  - template: stages/docker-build.yml@templates
+    parameters:
+      ServiceConnection: "SNAPPI_UAT_DOCKER"
+      ProjectDirectory: "snappi-docs"
+      DockerfilePath: "snappi-docs/Dockerfile.dev"
+      BuildContext: "snappi-docs"
+      Repository: "snappi.docs"

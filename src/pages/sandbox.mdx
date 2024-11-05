@@ -1,0 +1,116 @@
+
+
+export const description =
+  'In this guide, we will talk about what happens when something goes wrong while you work with the API.'
+
+# Welcome to the snappi sandbox! {{ className: 'lead' }} 
+
+Test drive our APIs on a dedicated test environment! {{ className: 'lead' }}
+
+<>
+  <p><img src="/snappi-sand-bg.png" alt="snappi" title="title" /></p>
+</>
+
+The snappi sandbox is a safe testing environment that allows you to experiment with our APIs without impacting your live systems or real data. It's the perfect place to learn and understand how our APIs work before integrating them into your applications.
+
+Use the HTTP/REST endpoints, take advantage of our SDKs & make use of our official integrations in real-time!
+
+## What is a sandbox environment?
+
+A sandbox environment is a separate testing space that mimics the production environment but is isolated from it. This means you can experiment, test and develop without the risk of affecting the live, operational environment of the API. 
+
+Sandboxes are essential for developers to explore and understand APIs without the fear of causing disruptions or incurring costs.
+
+
+## Why use a sandbox?
+
+- **Safety**: The Sandbox provides a safe space to make mistakes and learn without affecting the actual data or operations.
+
+- **Learning & Exploration**: It's an excellent way to familiarize yourself with the API's functionality, understand its capabilities, and experiment with different scenarios.
+
+- **Development & Testing**: Before deploying your application in a live environment, you can develop and test it thoroughly in the sandbox to ensure it works as expected.
+
+
+## Getting started with the sandbox environment
+
+1. **Registration and Access**
+
+To begin, you'll need to register for access to the developer portal of the API you're interested in. This process usually involves creating an account and may require you to accept some terms of use. Once registered, look for access to the Sandbox environment. This might be immediately available, or you might need to request access.
+
+2. **Obtaining API Keys**
+
+API keys are unique identifiers required to authenticate and interact with the API. In the sandbox environment, you'll be provided with test API keys. These keys allow you to make API calls without affecting the live environment. Keep these keys secure and do not share them publicly.
+
+3. **Making Your First API Call**
+
+With your API keys in hand, you're ready to make your first API call. This usually involves sending a request to a specific URL (the API endpoint) and including your API key for authentication. The documentation in the developer portal should provide you with sample calls you can try.
+
+
+```bash {{ title: 'cURL' }}
+curl -X GET "https://api.example.com/data" -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+4. **Exploring API Endpoints**
+
+APIs consist of multiple endpoints, each serving a different function. Use the sandbox to explore these endpoints. Try making different requests, such as GET (to retrieve data), POST (to create data), PUT (to update data), and DELETE (to remove data). Observe the responses you receive and familiarize yourself with the structure of the data.
+
+5. **Handling Responses**
+
+When you make an API call, you'll receive a response. This response can include the data you requested, confirmation of an action you performed, or error messages. Learning to interpret these responses is crucial. Pay attention to HTTP status codes (like 200 for success, 404 for not found, etc.) and the data structure in the response body.
+
+6. **Using Developer Tools**
+
+Most developer portals offer tools to help you interact with the API directly from the browser, such as interactive documentation or API consoles. These tools can be incredibly helpful for making test calls, understanding the API's behavior, and debugging.
+
+
+Sandbox environment is a powerful feature for anyone starting with REST APIs. It offers a risk-free zone to learn, develop, and test your applications. By following this guide, you're now equipped to begin your journey into the world of APIs with confidence. Remember, experimentation and practice are key to mastering API integration. Happy coding!
+
+{/*
+## Getting Started
+
+
+To access the sandbox, you'll need to generate a sandbox API key. You can do this by clicking the "Get Sandbox key" button at the top of this page.
+
+Once you have your key, you can start making requests to the sandbox APIs. Make sure to include your API key in the `Authorization` header of every request.
+
+The sandbox APIs have the same endpoints and functionality as our production APIs, but contain sanitized test data. You don't need to worry about violating any rate limits or accessing sensitive information.
+
+## Available APIs
+
+
+We currently have the following major APIs available in the sandbox:
+
+- **Pay Later**: your integration will automatically support any new BNPL providers that we add over time. You just need to pass the new provider name in the request.
+- **PSD2**: a secure environment, only accessible by parties who have explicitly been granted access, and governed by a standardized set of rules and conventions. It translates requests by the TPPs and performs an action or returns an answer.
+
+Each API has its own documentation page you can access from the navbar. Review the docs thoroughly before making requests to understand the capabilities and expected request/response formats.
+
+## Testing Tools
+
+
+We've integrated the sandbox with popular API testing tools like Postman or Swagger to make exploration and debugging easier.
+
+<Important>
+
+Tips for testing:
+
+- Start with `GET` endpoints before moving to write operations like `POST`, `PUT`, `DELETE`.
+- Use the expected request/response formats from the docs - invalid payloads may throw errors.
+- Test error conditions by passing incorrect parameters on purpose.
+- Record and review network traffic using browser dev tools or tools like Fiddler.
+- File any bugs you find on our issue tracker for our dev team to address.
+
+</Important>
+
+
+
+<Note>
+The sandbox is a safe space for experimentation and learning. Feel free to explore different features and functionalities without worrying about impacting real data. Once you are confident in your integration, 
+you can move on to the production environment to start working with real data.
+</Note>
+
+We want your experience with the sandbox to be as realistic as possible. Have fun exploring and let us know if you have any other questions! Happy sandbox testing!
+
+
+
+*/}

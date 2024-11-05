@@ -1,0 +1,292 @@
+import { Collapse } from "../components/Collapse"
+
+
+export const description =
+  'On this page, we’ll dive into the sandbox functionality of the snappi Pay Later API.'
+
+# Sandbox
+
+{/*
+<>
+  <p>
+    <img src="/snappi_pay_later.png" alt="Alt text" title="title" />
+  </p>
+</>
+*/}
+
+The sandbox allows you to simulate Pay Later transactions in a secure environment. {{ className: 'lead' }}
+
+{/* Simulate Pay Later transactions and verify the behavior of the snappi Pay Later feature without affecting live data. {{ className: 'lead' }} */}
+
+
+<Note>
+Experience the functionality of Pay Later without affecting live data, test various scenarios and validate your integration. This endpoint is designed to help you test and integrate Pay Later capabilities seamlessly into your applications.
+</Note>
+
+---
+
+## Create a mock transaction {{ tag: 'POST', label: '/bnplsandbox/createbnpl' }}
+
+
+<Row>
+  <Col>
+    Create a snappi Pay Later mock transaction in a sandbox environment. Simulate the behavior and responses of a snappi Pay Later transaction.
+    
+    <Note>
+    With the appropriate values in the query parameters you can mock a successful/failed Pay Later journey and check the Pay Later functionality.
+    </Note>
+    {/* Generate a new Pay Later sandbox environment for testing purposes. */}
+
+
+{/*     Create a snappi Pay Later mock transaction in a sandbox environment. By utilizing this section, you can simulate the behavior and responses of a snappi Pay Later transaction, test and refine your integration with the Pay Later functionality before deploying it to production.
+ */}
+    <Properties title="Query parameters">
+      <Property name="api-version" type="string">
+        The requested API version. The parameter is optional. Default value: `1.0`.
+      </Property>
+      <Property name="basketId" type="integer">
+        The unique identifier fot the basket. This parameter is required to create a buy now, pay later transaction.
+      </Property>
+      <Property name="isSuccessCallback" type="boolean">
+        Indicates whether the callback is successful or not. Specifies whether a success callback is required. This query parameter determines whether a callback function should be triggered upon successful completion of the API call.
+      </Property>
+    </Properties>
+
+    <Properties title="Headers">
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>X-Application-ID</span>} type="string">
+        The ID of the application making the request. This header parameter is required for authentication and identification purposes.
+      </Property>
+      <Property name={<span style={{ color: 'rgb(255,121,170)' }}>Ocp-Apim-Subscription-Key</span>} type="string">
+        A unique identifier related to the registered merchant in the snappi API environment, available within the application's details.
+      </Property>
+    </Properties>
+
+
+    <Properties title="Response attributes">
+      <Property name="message" type="string">
+        The message associated with the response. This parameter contains any relevant messages or notifications related to the response.
+      </Property> 
+      <Property name="errors" type="string">
+        The errors encountered during the API call. This parameter provides information about any errors or issues that occurred, including:
+        - `field` (string) - The field associated with the error.
+        - `message` (string) - The message associated with the error.
+      </Property>       
+      <Property name="type" type="string">
+        The type of the error.
+      </Property> 
+      <Property name="title" type="string">
+        The title of the response. This parameter provides a brief summary of the response.
+      </Property>
+      <Property name="status" type="integer">
+        The status of the API call. This parameter indicates the success or failure of the API call.
+      </Property>       
+      <Property name="detail" type="string">
+        Additional details about the error.
+      </Property> 
+      <Property name="instance" type="string">
+        The instance identifier of the response.
+      </Property>                    
+    </Properties>    
+
+
+  </Col>
+
+  <Col sticky>
+    <CodeGroup title="Request" tag="POST" label="/bnplsandbox/createbnpl">
+      ```bash {{ title: 'cURL' }}
+curl -X POST /bnplsandbox/createbnpl \
+  -H 'Accept: application/json' \
+  -H 'X-Application-ID: string' \
+  -H 'Ocp-Apim-Subscription-Key: string'
+      ```
+
+      ```csharp
+var client = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Post, "//bnplsandbox/createbnpl?basketId=<integer>&isSuccessCallback=<boolean>&api-version=1.0");
+request.Headers.Add("X-Application-ID", "<string>");
+request.Headers.Add("Accept", "application/json");
+request.Headers.Add("Ocp-Apim-Subscription-Key", "<string>");
+var response = await client.SendAsync(request);
+response.EnsureSuccessStatusCode();
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+
+      ```
+
+      ```php
+<?php
+
+require 'vendor/autoload.php';
+
+$headers = array(
+    'Accept' => 'application/json',
+    'X-Application-ID' => 'string',
+    'Ocp-Apim-Subscription-Key' => 'string',
+);
+
+$client = new \GuzzleHttp\Client();
+
+// Define array of request body.
+$request_body = array();
+
+try {
+    $response = $client->request('POST','/bnplsandbox/createbnpl', array(
+        'headers' => $headers,
+        'json' => $request_body,
+       )
+    );
+    print_r($response->getBody()->getContents());
+ }
+ catch (\GuzzleHttp\Exception\BadResponseException $e) {
+    // handle exception or api errors.
+    print_r($e->getMessage());
+ }
+
+ // ...
+      ```
+
+      ```ruby
+require "uri"
+require "net/http"
+
+url = URI("//bnplsandbox/createbnpl?basketId=<integer>&isSuccessCallback=<boolean>&api-version=1.0")
+
+http = Net::HTTP.new(url.host, url.port);
+request = Net::HTTP::Post.new(url)
+request["X-Application-ID"] = "<string>"
+request["Accept"] = "application/json"
+request["Ocp-Apim-Subscription-Key"] = "<string>"
+
+response = http.request(request)
+puts response.read_body
+
+      ```
+
+
+      ```js
+const headers = {
+  'Accept':'application/json',
+  'X-Application-ID':'string',
+  'Ocp-Apim-Subscription-Key':'string'
+};
+
+fetch('/bnplsandbox/createbnpl',
+{
+  method: 'POST',
+
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+      ```
+
+
+      ```python
+import requests
+headers = {
+  'Accept': 'application/json',
+  'X-Application-ID': 'string',
+  'Ocp-Apim-Subscription-Key': 'string'
+}
+
+r = requests.post('/bnplsandbox/createbnpl', headers = headers)
+
+print(r.json())
+
+      ```
+
+      ```go
+package main
+
+import (
+  "fmt"
+  "net/http"
+  "io/ioutil"
+)
+
+func main() {
+
+  url := "//bnplsandbox/createbnpl?basketId=%3Cinteger%3E&isSuccessCallback=%3Cboolean%3E&api-version=1.0"
+  method := "POST"
+
+  client := &http.Client {
+  }
+  req, err := http.NewRequest(method, url, nil)
+
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  req.Header.Add("X-Application-ID", "<string>")
+  req.Header.Add("Accept", "application/json")
+  req.Header.Add("Ocp-Apim-Subscription-Key", "<string>")
+
+  res, err := client.Do(req)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  defer res.Body.Close()
+
+  body, err := ioutil.ReadAll(res.Body)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  fmt.Println(string(body))
+} 
+      ```
+
+    </CodeGroup>
+
+  <Col sticky>
+    <CodeGroup title="Response examples">
+
+    ```json {{ title: '200' }}
+Create BNPL Sandbox succeed.
+    ```
+
+    ```json {{ title: '400' }}
+    {
+      "message": "string",
+      "errors": {        
+        {
+          "field": "string",
+          "message": "string"
+        }
+      }
+    }
+    ```
+
+    ```json {{ title: '500' }}
+{
+  "type": "string",
+  "title": "string",
+  "status": 0,
+  "detail": "string",
+  "instance": "string"
+}
+    ``` 
+    </CodeGroup> 
+  </Col>   
+
+  </Col>
+</Row>
+
+
+
+### Responses
+
+<div className="table">
+
+| Status | Description                                                             | Notes                                    | 
+| ------ | ------------------------------------------------------------------- | ---------------------------------------------- | 
+| **200**  | <a href="https://tools.ietf.org/html/rfc7231#section-6.3.1" target="_blank">OK</a>            | Create BNPL Sandbox succeed.                   | 
+| **400**    | <a href="https://tools.ietf.org/html/rfc7231#section-6.5.4"  target="_blank">Not Found</a>    | Invalid request parameters / Basket not found / Basket with the given id was not found  / `X-Application-ID` not found.                           | 
+| **500**    | <a href="https://tools.ietf.org/html/rfc7231#section-6.6.1" target="_blank">Internal Error</a> | Internal Server Error.                         | 
+
+</div>
+---
+
