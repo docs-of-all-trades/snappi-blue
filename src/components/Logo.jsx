@@ -9,7 +9,7 @@ export function Logo(props) {
       viewBox="0 0 1673.9 336.2"
       style={{
         enableBackground: 'new 0 0 1673.9 336.2',
-        height: '35px',
+        height: '50px',
       }}
       xmlSpace="preserve"
     >
