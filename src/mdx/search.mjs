@@ -1,84 +1,80 @@
 import * as url from 'node:url';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
-import {createLoader} from 'simple-functional-loader';
+import { createLoader } from 'simple-functional-loader';
 import glob from 'fast-glob';
-import {remark} from 'remark';
+import { remark } from 'remark';
 import remarkMdx from 'remark-mdx';
-import {visit, SKIP} from 'unist-util-visit';
-import {slugifyWithCounter} from '@sindresorhus/slugify';
-import {toString} from 'mdast-util-to-string';
-import {filter} from 'unist-util-filter';
+import { visit, SKIP } from 'unist-util-visit';
+import { slugifyWithCounter } from '@sindresorhus/slugify';
+import { toString } from 'mdast-util-to-string';
+import { filter } from 'unist-util-filter';
 
 const __filename = url.fileURLToPath(import.meta.url);
 const processor = remark().use(remarkMdx).use(extractSections);
 const slugify = slugifyWithCounter();
 
 function isObjectExpression(node) {
-	return (
-		node.type === 'mdxTextExpression'
-    && node.data?.estree?.body?.[0]?.expression?.type === 'ObjectExpression'
-	);
+  return (
+    node.type === 'mdxTextExpression' &&
+    node.data?.estree?.body?.[0]?.expression?.type === 'ObjectExpression'
+  );
 }
 
 function excludeObjectExpressions(tree) {
-	return filter(tree, node => !isObjectExpression(node));
+  return filter(tree, node => !isObjectExpression(node));
 }
 
 function extractSections() {
-	return (tree, {sections}) => {
-		slugify.reset();
+  return (tree, { sections }) => {
+    slugify.reset();
 
-		visit(tree, node => {
-			if (node.type === 'heading' || node.type === 'paragraph') {
-				const content = toString(excludeObjectExpressions(node));
-				if (node.type === 'heading' && node.depth <= 2) {
-					const hash = node.depth === 1 ? null : slugify(content);
-					sections.push([content, hash, []]);
-				} else {
-					sections.at(-1)?.[2].push(content);
-				}
-
-				return SKIP;
-			}
-		});
-	};
+    visit(tree, node => {
+      if (node.type === 'heading' || node.type === 'paragraph') {
+        const content = toString(excludeObjectExpressions(node));
+        if (node.type === 'heading' && node.depth <= 2) {
+          const hash = node.depth === 1 ? null : slugify(content);
+          sections.push([content, hash, []]);
+        } else {
+          sections.at(-1)?.[2].push(content);
+        }
+        return SKIP;
+      }
+    });
+  };
 }
 
 export default function (nextConfig = {}) {
-	const cache = new Map();
+  const cache = new Map();
 
-	return Object.assign({}, nextConfig, {
-		webpack(config, options) {
-			config.module.rules.push({
-				test: __filename,
-				use: [
-					createLoader(function () {
-						const pagesDir = path.resolve('./src/pages');
-						this.addContextDependency(pagesDir);
+  return Object.assign({}, nextConfig, {
+    webpack(config, options) {
+      config.module.rules.push({
+        test: __filename,
+        use: [
+          createLoader(function () {
+            const pagesDir = path.resolve('./src/pages');
+            this.addContextDependency(pagesDir);
 
-						const files = glob.sync('**/*.mdx', {cwd: pagesDir});
-						const data = files.map(file => {
-							const url
-                = file === 'index.mdx' ? '/' : `/${file.replace(/\.mdx$/, '')}`;
-							const mdx = fs.readFileSync(path.join(pagesDir, file), 'utf8');
+            const files = glob.sync('**/*.mdx', { cwd: pagesDir });
+            const data = files.map(file => {
+              const url = file === 'index.mdx' ? '/' : `/${file.replace(/\.mdx$/, '')}`;
+              const mdx = fs.readFileSync(path.join(pagesDir, file), 'utf8');
 
-							let sections = [];
+              let sections = [];
 
-							if (cache.get(file)?.[0] === mdx) {
-								sections = cache.get(file)[1];
-							} else {
-								const vfile = {value: mdx, sections};
-								processor.runSync(processor.parse(vfile), vfile);
-								cache.set(file, [mdx, sections]);
-							}
+              if (cache.get(file)?.[0] === mdx) {
+                sections = cache.get(file)[1];
+              } else {
+                const vfile = { value: mdx, sections };
+                processor.runSync(processor.parse(vfile), vfile);
+                cache.set(file, [mdx, sections]);
+              }
 
-							return {url, sections};
-						});
+              return { url, sections };
+            });
 
-						// When this file is imported within the application
-						// the following module is loaded:
-						return `
+            return `
               import FlexSearch from 'flexsearch'
 
               let sectionIndex = new FlexSearch.Document({
@@ -123,15 +119,15 @@ export default function (nextConfig = {}) {
                 }))
               }
             `;
-					}),
-				],
-			});
+          }),
+        ],
+      });
 
-			if (typeof nextConfig.webpack === 'function') {
-				return nextConfig.webpack(config, options);
-			}
+      if (typeof nextConfig.webpack === 'function') {
+        return nextConfig.webpack(config, options);
+      }
 
-			return config;
-		},
-	});
+      return config;
+    },
+  });
 }
