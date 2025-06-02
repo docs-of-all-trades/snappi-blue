@@ -12,51 +12,55 @@ The Account Information Service provides account information services as an onli
 This API allows you to retrieve account information, balances and transactions from payment accounts that you have been granted access to.
 </Note>
 
-<Tab.Group>
-  <Tab.List className="flex space-x-4 border-b mb-4">
-    <Tab className={({ selected }) =>
-      `px-4 py-2 text-sm font-medium rounded-t-lg ${
-        selected 
-          ? 'bg-white border-b-2 border-emerald-500 text-emerald-500'
-          : 'text-gray-500 hover:text-gray-700'
-      }`
-    }>
-      Account Information Flow
-    </Tab>
-    <Tab className={({ selected }) =>
-      `px-4 py-2 text-sm font-medium rounded-t-lg ${
-        selected 
-          ? 'bg-white border-b-2 border-emerald-500 text-emerald-500'
-          : 'text-gray-500 hover:text-gray-700'
-      }`
-    }>
-      Account Consent Flow
-    </Tab>
-  </Tab.List>
-  <Tab.Panels>
-    <Tab.Panel>
-      <div className="my-8">
-        <Image 
-          src="/PSD2-Accounts-API-flow.webp"
-          alt="Account Information Flow"
-          width={800}
-          height={600}
-          sizes="(max-width: 800px) 100vw, 800px"
-        />
-      </div>
-    </Tab.Panel>
-    <Tab.Panel>
-      <div className="my-8">
-        <Image 
-          src="/accounts-api-flow.webp"
-          alt="Account Consent Flow" 
-          width={800}
-          height={600}
-          sizes="(max-width: 800px) 100vw, 800px"
-        />
-      </div>
-    </Tab.Panel>
-  </Tab.Panels>
-</Tab.Group>
+<div className="w-full max-w-3xl mx-auto px-2 py-8">
+  <Tab.Group>
+    <Tab.List className="flex space-x-1 rounded-xl bg-emerald-900/10 p-1">
+      <Tab className={({ selected }) =>
+        `w-full rounded-lg py-2.5 text-sm font-medium leading-5 
+        ${selected
+          ? 'bg-white text-emerald-700 shadow'
+          : 'text-gray-600 hover:bg-white/[0.12] hover:text-emerald-600'
+        }`
+      }>
+        Account Information Flow
+      </Tab>
+      <Tab className={({ selected }) =>
+        `w-full rounded-lg py-2.5 text-sm font-medium leading-5 
+        ${selected
+          ? 'bg-white text-emerald-700 shadow'
+          : 'text-gray-600 hover:bg-white/[0.12] hover:text-emerald-600'
+        }`
+      }>
+        Account Consent Flow
+      </Tab>
+    </Tab.List>
+    <Tab.Panels className="mt-4">
+      <Tab.Panel className="rounded-xl bg-white p-3">
+        <div className="relative overflow-hidden rounded-xl">
+          <Image 
+            src="/PSD2-Accounts-API-flow.webp"
+            alt="Account Information Flow"
+            width={800}
+            height={600}
+            className="w-full object-cover"
+            sizes="(max-width: 800px) 100vw, 800px"
+          />
+        </div>
+      </Tab.Panel>
+      <Tab.Panel className="rounded-xl bg-white p-3">
+        <div className="relative overflow-hidden rounded-xl">
+          <Image 
+            src="/accounts-api-flow.webp"
+            alt="Account Consent Flow" 
+            width={800}
+            height={600}
+            className="w-full object-cover"
+            sizes="(max-width: 800px) 100vw, 800px"
+          />
+        </div>
+      </Tab.Panel>
+    </Tab.Panels>
+  </Tab.Group>
+</div>
 
 [Rest of the API documentation content remains unchanged]
